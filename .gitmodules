@@ -1,0 +1,6 @@
+[submodule "ext/sushi"]
+	path = ext/sushi
+	url = https://github.com/apples/sushi
+[submodule "ext/ginseng"]
+	path = ext/ginseng
+	url = https://github.com/apples/ginseng

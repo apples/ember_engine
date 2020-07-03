@@ -1,0 +1,17 @@
+
+NGINX_ZIP=https://nginx.org/download/nginx-1.19.0.zip
+NGINX_DIR=nginx-1.19.0
+
+.PHONY: all
+all: .nginx .nginx/conf/nginx.conf
+
+.nginx:
+	echo "Downloading Nginx..."
+	curl $(NGINX_ZIP) -o nginx.zip
+	unzip nginx.zip
+	rm nginx.zip
+	mv $(NGINX_DIR) .nginx
+	rm .nginx/conf/nginx.conf
+
+.nginx/conf/nginx.conf: nginx.conf .nginx
+	cp nginx.conf .nginx/conf/nginx.conf

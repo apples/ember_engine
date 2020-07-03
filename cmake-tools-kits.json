@@ -1,0 +1,10 @@
+[
+  {
+    "name": "Emscripten (upstream)",
+    "toolchainFile": "C:\\emsdk\\upstream\\emscripten\\cmake\\Modules\\Platform\\Emscripten.cmake",
+    "compilers": {
+      "C": "C:\\emsdk\\upstream\\emscripten\\emcc.bat",
+      "CXX": "C:\\emsdk\\upstream\\emscripten\\em++.bat"
+    }
+  }
+]

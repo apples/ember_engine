@@ -1,0 +1,14 @@
+# Common
+/.nginx
+/.vs
+/.vscode
+/build
+node_modules
+
+# Secrets
+.env
+
+# Temporary files
+*.blend[0-9]
+*.kra[~]
+*.swp
