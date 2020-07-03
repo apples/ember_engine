@@ -21,7 +21,6 @@ endif()
 add_subdirectory(ext/ginseng)
 add_subdirectory(ext/lua)
 add_subdirectory(ext/sol2)
-add_subdirectory(ext/metastuff)
 
 target_compile_definitions(sol2 INTERFACE SOL_CXX17_FEATURES=1)
 
@@ -118,9 +117,8 @@ if(EMSCRIPTEN)
     em_link_js_library(ember_client ${EMBER_JS})
     target_link_libraries(ember_client
         ginseng
-        sol2
-        metastuff
         sushi
+        sol2
         msdfgen
         soloud)
     add_dependencies(ember_client ember_static ember_data)

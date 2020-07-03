@@ -26,11 +26,25 @@ cd emsdk
 emsdk install latest
 ```
 
+### Emscripten
+
+Follow the instructions [here](https://emscripten.org/docs/getting_started/downloads.html).
+
+If you're using MSYS2, you'll probably want to source the `emsdk_env.sh` script in your `.bash_profile`.
+This will ensure that it is always available when you launch a new MSYS2 terminal.
+(Note: This may increase the time it takes to launch.)
+
+### Blender 2.8
+
+Blender is only needed if you want to use the integrated scripts for exporting models at build time.
+
+Install the `blender-scripts/add-ons/iqm_export.py` script as an add-on and make sure to enable it.
+
 ## VSCode Setup
 
 1. Install the "C/C++" and "CMake Tools" extensions.
 2. In either your global or project settings, set the `"cmake.cmakePath"` setting to the path to your CMake executable.
-3. 
+3.
 
 ## Building
 
