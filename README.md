@@ -28,6 +28,12 @@ Depending on which shell you're using, you may want to make different decisions 
 
 If you're using MSYS2, you may want to `source /c/emsdk/emsdk_env.sh` in your `~/.bash_profile`.
 
+### Blender 2.8
+
+Blender is only needed if you want to use the integrated scripts for exporting models at build time.
+
+Install the `blender-scripts/add-ons/iqm_export.py` script as an add-on and make sure to enable it.
+
 ## VSCode Setup
 
 1. Install the "C/C++" and "CMake Tools" extensions.
