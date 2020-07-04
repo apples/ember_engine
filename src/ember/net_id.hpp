@@ -1,5 +1,7 @@
 #pragma once
 
+#include <cstdint>
+
 /** Canonical never-recycled ID for any entity, useful for serialization */
 namespace ember {
 
