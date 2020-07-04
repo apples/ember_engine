@@ -1,6 +1,6 @@
 #include "entities.hpp"
 
-#include "components.hpp"
+#include "net_id.hpp"
 
 #include <iostream>
 
@@ -10,7 +10,7 @@ auto database::create_entity() -> ent_id {
     return create_entity(next_id++);
 }
 
-auto database::create_entity(net_id id) -> ent_id {
+auto database::create_entity(net_id::id_type id) -> ent_id {
     auto iter = netid_to_entid.find(id);
 
     if (iter != netid_to_entid.end()) {
@@ -19,13 +19,13 @@ auto database::create_entity(net_id id) -> ent_id {
     }
 
     auto ent = database::create_entity();
-    database::add_component(ent, component::net_id{id});
+    database::add_component(ent, net_id{id});
     netid_to_entid[id] = ent;
 
     return ent;
 }
 
-void database::destroy_entity(net_id id) {
+void database::destroy_entity(net_id::id_type id) {
     auto iter = netid_to_entid.find(id);
 
     if (iter == netid_to_entid.end()) {
@@ -42,8 +42,8 @@ void database::destroy_entity(net_id id) {
 }
 
 void database::destroy_entity(ent_id eid) {
-    if (has_component<component::net_id>(eid)) {
-        auto id = get_component<component::net_id>(eid).id;
+    if (has_component<net_id>(eid)) {
+        auto id = get_component<net_id>(eid).id;
 
         if (destroy_entity_callback) {
             destroy_entity_callback(id);
@@ -58,7 +58,7 @@ void database::destroy_entity(ent_id eid) {
     database::destroy_entity(eid);
 }
 
-auto database::get_entity(net_id id) -> std::optional<ent_id> {
+auto database::get_entity(net_id::id_type id) -> std::optional<ent_id> {
     auto iter = netid_to_entid.find(id);
     if (iter == netid_to_entid.end()) {
         return std::nullopt;
@@ -67,7 +67,7 @@ auto database::get_entity(net_id id) -> std::optional<ent_id> {
     }
 }
 
-auto database::get_or_create_entity(net_id id) -> ent_id {
+auto database::get_or_create_entity(net_id::id_type id) -> ent_id {
     auto iter = netid_to_entid.find(id);
     if (iter == netid_to_entid.end()) {
         return create_entity(id);
@@ -76,7 +76,7 @@ auto database::get_or_create_entity(net_id id) -> ent_id {
     }
 }
 
-void database::on_destroy_entity(std::function<void(net_id id)> func) {
+void database::on_destroy_entity(std::function<void(net_id::id_type id)> func) {
     destroy_entity_callback = std::move(func);
 }
 
@@ -91,11 +91,11 @@ void register_type<database>(sol::table& lua) {
     lua.new_usertype<database>("database",
         "create_entity", sol::overload(
             sol::resolve<database::ent_id()>(&database::create_entity),
-            sol::resolve<database::ent_id(database::net_id)>(&database::create_entity)),
+            sol::resolve<database::ent_id(net_id::id_type)>(&database::create_entity)),
         "destroy_entity", sol::overload(
-            sol::resolve<void(database::net_id)>(&database::destroy_entity),
+            sol::resolve<void(net_id::id_type)>(&database::destroy_entity),
             sol::resolve<void(database::ent_id)>(&database::destroy_entity)),
-        "get_entity", [](database& db, database::net_id id, sol::this_state s) -> sol::object {
+        "get_entity", [](database& db, net_id::id_type id, sol::this_state s) -> sol::object {
             auto lua = sol::state_view(s);
             auto eid = db.get_entity(id);
             if (eid) {

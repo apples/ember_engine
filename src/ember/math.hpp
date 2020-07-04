@@ -1,10 +1,8 @@
 #pragma once
 
-#include <cmath>
+#include <sol.hpp>
 
-namespace sol {
-class table;
-} // namespace sol
+#include <cmath>
 
 namespace ember::math {
 

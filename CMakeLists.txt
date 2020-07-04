@@ -68,8 +68,8 @@ if(EMSCRIPTEN)
     file(GLOB_RECURSE EMBER_DATA_FILES CONFIGURE_DEPENDS ${EMBER_DATA_DIR}/*)
     list(APPEND EMBER_DATA_FILES ${EMBER_MODEL_OUTPUTS})
     set(FILE_PACKAGER $ENV{EMSDK}/upstream/emscripten/tools/file_packager.py)
-    set(EMBER_DATA_FILE ${EMBER_WWW_DIR}/ember_client.data)
-    set(EMBER_DATA_LOADER ${EMBER_WWW_DIR}/ember_client.data.js)
+    set(EMBER_DATA_FILE ${EMBER_WWW_DIR}/ember_game.data)
+    set(EMBER_DATA_LOADER ${EMBER_WWW_DIR}/ember_game.data.js)
     add_custom_command(
         OUTPUT ${EMBER_DATA_FILE} ${EMBER_DATA_LOADER}
         COMMAND "${PYTHON_EXECUTABLE}"
@@ -97,7 +97,7 @@ if(EMSCRIPTEN)
 
     # Client C++
     file(GLOB_RECURSE EMBER_SRCS CONFIGURE_DEPENDS src/*.cpp src/*.hpp)
-    add_executable(ember_client ${EMBER_SRCS} ${EMBER_JS})
+    add_executable(ember_game ${EMBER_SRCS} ${EMBER_JS})
     string(CONCAT EMBER_LINK_FLAGS
         " -s TOTAL_MEMORY=33554432"
         " -s DISABLE_EXCEPTION_CATCHING=0"
@@ -107,21 +107,21 @@ if(EMSCRIPTEN)
         " -g4"
         " -s ASSERTIONS=1"
         " --source-map-base file://${CMAKE_BINARY_DIR}/")
-    set_target_properties(ember_client PROPERTIES
+    set_target_properties(ember_game PROPERTIES
         SUFFIX .js
         COMPILE_FLAGS "${EMBER_COMPILE_FLAGS}"
         LINK_FLAGS "${EMBER_LINK_FLAGS}"
         LINK_FLAGS_DEBUG "${EMBER_LINK_FLAGS_DEBUG}"
         RUNTIME_OUTPUT_DIRECTORY "${EMBER_WWW_DIR}")
-    target_compile_options(ember_client PRIVATE "-std=c++17" "SHELL:${EMSCRIPTEN_PORTS_FLAGS}" "$<$<CONFIG:DEBUG>:-O1>")
-    em_link_js_library(ember_client ${EMBER_JS})
-    target_link_libraries(ember_client
+    target_compile_options(ember_game PRIVATE "-std=c++17" "SHELL:${EMSCRIPTEN_PORTS_FLAGS}" "$<$<CONFIG:DEBUG>:-O1>")
+    em_link_js_library(ember_game ${EMBER_JS})
+    target_link_libraries(ember_game
         ginseng
         sushi
         sol2
         msdfgen
         soloud)
-    add_dependencies(ember_client ember_static ember_data)
+    add_dependencies(ember_game ember_static ember_data)
 else()
     message(FATAL_ERROR "You're on your own for this one")
 endif()

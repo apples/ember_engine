@@ -2,6 +2,8 @@
 
 #include "json_serializers.hpp"
 
+#include <sol.hpp>
+
 #include <tuple>
 
 #ifndef EMBER_COMPONENT_MAX_TYPES
@@ -10,8 +12,10 @@
 
 namespace component {
 
-using json_serializers::basic::from_json;
-using json_serializers::basic::to_json;
+using ember::json_serializers::basic::from_json;
+using ember::json_serializers::basic::to_json;
+
+void register_all_components(sol::table& table);
 
 // Type registry
 template <std::size_t N>

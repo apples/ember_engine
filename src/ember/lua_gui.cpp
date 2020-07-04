@@ -4,7 +4,7 @@
 
 namespace ember::lua_gui {
 
-void register_types(sol::table lua) {
+void register_types(sol::table& lua) {
     using gui::block_layout;
     using gui::widget;
 

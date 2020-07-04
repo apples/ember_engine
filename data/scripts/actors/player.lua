@@ -1,7 +1,7 @@
 
 local player = {}
 
-function player.update(eid, delta, entities)
+function player.update(eid, delta)
 end
 
 return player

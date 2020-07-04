@@ -1,5 +1,7 @@
 #include "engine.hpp"
 
+#include <iostream>
+
 namespace ember {
 
 void engine::tick() try {
@@ -32,10 +34,10 @@ void engine::tick() try {
             continue;
     }
 
-    // Run current state
+    // Run current scene
 
-    if (current_state) {
-        current_state->tick(delta);
+    if (current_scene) {
+        current_scene->tick(std::chrono::duration<float>(delta).count());
     }
 
     // Render scene
@@ -43,9 +45,9 @@ void engine::tick() try {
     glClearColor(0,0,0,1);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    if (current_state) {
-        current_state->render(program_basic);
-        update_gui_state(current_state->render_gui());
+    if (current_scene) {
+        current_scene->render();
+        update_gui_state(current_scene->render_gui());
     }
 
     // Render GUI
@@ -58,16 +60,18 @@ void engine::tick() try {
 
     // End of frame
 
+    if (queued_transition) {
+        current_scene = queued_transition->factory(*this, current_scene.get());
+        lua["scene"] = current_scene;
+        current_scene->init();
+    }
+
     lua.collect_garbage();
 
     SDL_GL_SwapWindow(window);
 } catch (const std::exception& e) {
     std::cerr << "ember::engine::tick: EXCEPTION: " << e.what() << std::endl;
     std::throw_with_nested(std::runtime_error("tick: "));
-}
-
-void engine::run_system(const std::string& name, delta_duration delta) {
-    
 }
 
 auto engine::handle_game_input(const SDL_Event& event) -> bool try {
@@ -77,7 +81,11 @@ auto engine::handle_game_input(const SDL_Event& event) -> bool try {
         return true;
     }
 
-    return current_state->handle_game_input(event);
+    if (current_scene) {
+        return current_scene->handle_game_input(event);
+    } else {
+        return false;
+    }
 } catch (...) {
     std::throw_with_nested(std::runtime_error("handle_game_input: "));
 }

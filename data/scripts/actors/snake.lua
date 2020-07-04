@@ -1,7 +1,7 @@
 
 local snake = {}
 
-function snake.update(eid, delta, entities)
+function snake.update(eid, delta)
 end
 
 return snake

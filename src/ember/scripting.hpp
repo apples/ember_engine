@@ -21,7 +21,7 @@ template <typename T>
 void register_type(sol::table& lua) {
     std::apply(
         [&](auto&&... members) {
-            auto usertype = lua.new_usertype<T>(meta::getName<T>());
+            auto usertype = lua.new_usertype<T>(reflect<T>().name);
 
             if constexpr (has_register<T>::value) {
                 register_usertype(token<T>{}, usertype);

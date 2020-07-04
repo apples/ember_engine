@@ -2,16 +2,15 @@
 
 #include "math.hpp"
 #include "lua_gui.hpp"
-#include "components.hpp"
+#include "component_common.hpp"
+#include "scripting.hpp"
+#include "entities.hpp"
 
 #include <sol.hpp>
 
 namespace ember {
 
-engine::engine(const config::config& config) :
-    entities(),
-    lua()
-{
+engine::engine(const config::config& config) {
     std::clog << "Constructing engine..." << std::endl;
 
     // Initialize Lua
@@ -27,8 +26,10 @@ engine::engine(const config::config& config) :
     lua["package"]["path"] = "data/scripts/?.lua;data/scripts/?/init.lua";
     lua["package"]["cpath"] = "";
 
-    math::register_types(lua.globals());
-    lua_gui::register_types(lua.globals());
+    sol::table globals = lua.globals();
+    math::register_types(globals);
+    lua_gui::register_types(globals);
+    scripting::register_type<database>(globals);
     register_engine_module();
 
     {
@@ -69,11 +70,11 @@ engine::engine(const config::config& config) :
 
     // Compile Shaders
 
-    program_basic = basic_shader_program("data/shaders/basic.vert", "data/shaders/basic.frag");
-    program_msdf = msdf_shader_program("data/shaders/msdf.vert", "data/shaders/msdf.frag");
+    basic_shader = shaders::basic_shader_program("data/shaders/basic.vert", "data/shaders/basic.frag");
+    msdf_shader = shaders::msdf_shader_program("data/shaders/msdf.vert", "data/shaders/msdf.frag");
 
-    program_basic.bind();
-    program_basic.set_s_texture(0);
+    basic_shader.bind();
+    basic_shader.set_s_texture(0);
 
     // Resource caches
 
@@ -151,8 +152,8 @@ engine::engine(const config::config& config) :
 
     renderer = sushi_renderer(
         {display.width, display.height},
-        program_basic,
-        program_msdf,
+        basic_shader,
+        msdf_shader,
         font_cache,
         mesh_cache,
         texture_cache);
@@ -170,7 +171,7 @@ engine::engine(const config::config& config) :
 
     if (!init_gui_result.valid()) {
         sol::error err = init_gui_result;
-        throw std::runtime_error("init_gui(): "s + err.what());
+        throw std::runtime_error(std::string("init_gui(): ") + err.what());
     }
 
     update_gui_state = lua["update_gui_state"];
@@ -185,7 +186,7 @@ engine::engine(const config::config& config) :
 
 engine::~engine() {
     SDL_GL_DeleteContext(glcontext);
-    SDL_DestroyWindow(g_window);
+    SDL_DestroyWindow(window);
 }
 
 } // namespace ember

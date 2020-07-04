@@ -13,7 +13,7 @@ namespace ember {
 
 class render_queue {
 public:
-    struct render_item {
+    struct item {
         struct attachment {
             sushi::pose pose;
             int bone_idx;
@@ -31,18 +31,17 @@ public:
     void prepare(
         shaders::basic_shader_program& shader,
         const glm::mat4& proj_matrix,
-        const glm::mat4& view_matrix,
-        std::size_t n);
+        const glm::mat4& view_matrix);
 
     /** Adds an item to the queue if it is within the view frustum */
-    void add_render_item(const render_item& item);
+    void add(const item& item);
 
     /** Renders all queued items */
     void render_items();
 
 private:
-    std::vector<render_item> queue;
-    shaders::basic_shader_program* program_basic;
+    std::vector<item> queue;
+    shaders::basic_shader_program* basic_shader;
     glm::mat4 proj;
     glm::mat4 view;
     sushi::frustum frustum;

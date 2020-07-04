@@ -1,11 +1,8 @@
-#include "engine.hpp"
+#include "scene_mainmenu.hpp"
 
-#include "config.hpp"
-
-#include "emberjs/config.hpp"
-#include "emberjs/hubservice.hpp"
-
-#include <sushi/sushi.hpp>
+#include "ember/engine.hpp"
+#include "ember/config.hpp"
+#include "ember/emberjs/config.hpp"
 
 #include <emscripten.h>
 #include <emscripten/html5.h>
@@ -43,18 +40,15 @@ int main() try {
 
     std::cout << "Loading config..." << std::endl;
 
-    auto config = emberjs::get_config().get<client_config::config>();
-
-    std::cout << "Initializing HubService..." << std::endl;
-
-    auto hubservice = emberjs::hubservice{config.server.hubservice_url};
+    auto config = emberjs::get_config().get<ember::config::config>();
 
     std::cout << "Instantiating engine..." << std::endl;
 
-    auto engine = std::make_unique<ember_client_engine>(config, hubservice);
+    auto engine = std::make_unique<ember::engine>(config);
+
+    engine->queue_transition<scene_mainmenu>();
 
     std::cout << "Success." << std::endl;
-    std::cout << sizeof(ember_client_engine) << std::endl;
 
     loop = [&engine]{ engine->tick(); };
 

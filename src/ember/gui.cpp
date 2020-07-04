@@ -1,6 +1,6 @@
 #include "gui.hpp"
 
-#include <common/utility.hpp>
+#include "utility.hpp"
 
 #include <glm/gtc/matrix_transform.hpp>
 
@@ -12,7 +12,7 @@
 namespace { // static
 
 template <typename PreFunc, typename PostFunc>
-void visit_in_order(gui::widget& root, const PreFunc& prefunc, const PostFunc& postfunc) {
+void visit_in_order(ember::gui::widget& root, const PreFunc& prefunc, const PostFunc& postfunc) {
     prefunc(root);
 
     if (const auto& children = root.get_children(); !children.empty()) {
@@ -28,7 +28,7 @@ void visit_in_order(gui::widget& root, const PreFunc& prefunc, const PostFunc& p
 }
 
 template <typename F>
-void visit_in_order(gui::widget& root, const F& func) {
+void visit_in_order(ember::gui::widget& root, const F& func) {
     return visit_in_order(root, func, [](auto&){});
 }
 

@@ -4,10 +4,10 @@ local vdom = require('vdom')
 -- left: number
 local function heart(props)
     return vdom.create_element('label', {
-        text = props.filled and '♥' or '♡',
-        size = 32,
+        color = '#f00',
+        text = props.filled and '[#]' or '[ ]',
+        height = 32,
         left = props.left,
-        top = 0,
         valign = 'top',
         halign = 'left',
     })
@@ -22,7 +22,7 @@ return function(props)
     for i = 1, props.health do
         hearts[i] = vdom.create_element(heart, { filled = true, left = i * 32 })
     end
-    for i = props.health + 1, max_health do
+    for i = props.health + 1, props.max_health do
         hearts[i] = vdom.create_element(heart, { filled = false, left = i * 32 })
     end
 

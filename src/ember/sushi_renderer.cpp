@@ -8,14 +8,14 @@ namespace ember {
 
 sushi_renderer::sushi_renderer(
     const glm::vec2& display_area,
-    basic_shader_program& program,
-    msdf_shader_program& program_msdf,
+    shaders::basic_shader_program& program,
+    shaders::msdf_shader_program& msdf_shader,
     cache<msdf_font>& font_cache,
     cache<sushi::mesh_group>& mesh_cache,
     cache<sushi::texture_2d>& texture_cache)
     : display_area(display_area),
       program(&program),
-      program_msdf(&program_msdf),
+      msdf_shader(&msdf_shader),
       font_cache(&font_cache),
       mesh_cache(&mesh_cache),
       texture_cache(&texture_cache) {
@@ -87,7 +87,6 @@ void sushi_renderer::draw_rectangle(const std::string& texture, const glm::vec4&
     program->set_tint(color);
     program->set_hue(0);
     program->set_saturation(1);
-    program->set_enable_lighting(false);
     program->set_animated(false);
 
     sushi::set_texture(0, *texture_cache->get(texture));
@@ -112,17 +111,6 @@ void sushi_renderer::draw_model(const std::string& mesh, const std::string& text
     program->set_tint({1, 1, 1, 1});
     program->set_hue(0);
     program->set_saturation(1);
-    
-    {
-        const auto angle = 3.14159f * 0.75f;
-        const auto rot = glm::rotate(glm::mat4(1), angle, glm::normalize(glm::vec3{1, 1, -1}));
-        const auto dir = glm::vec3(view * rot * glm::normalize(glm::vec4{-1, 0, -1, 0}));
-
-        program->set_sky_dir(dir);
-        program->set_sky_color({1, 1, 1});
-        program->set_ambient_color({1, 1, 1});
-        program->set_enable_lighting(true);
-    }
 
     sushi::set_texture(0, *texture_cache->get(texture));
 
@@ -148,16 +136,16 @@ void sushi_renderer::draw_text(const std::string& text, const std::string& fontn
     auto proj = glm::ortho(0.f, display_area.x, 0.f, display_area.y, -1.f, 1.f);
     auto model = glm::scale(glm::translate(glm::mat4(1.f), glm::vec3(position, 0.f)), glm::vec3{size, size, 1.f});
 
-    program_msdf->bind();
-    program_msdf->set_msdf(0);
-    program_msdf->set_pxRange(4.f);
-    program_msdf->set_fgColor(color);
+    msdf_shader->bind();
+    msdf_shader->set_msdf(0);
+    msdf_shader->set_pxRange(4.f);
+    msdf_shader->set_fgColor(color);
 
     for (auto c : text) {
         auto& glyph = font->get_glyph(c);
 
-        program_msdf->set_MVP(proj * model);
-        program_msdf->set_texSize({glyph.texture.width, glyph.texture.height});
+        msdf_shader->set_MVP(proj * model);
+        msdf_shader->set_texSize({glyph.texture.width, glyph.texture.height});
 
         sushi::set_texture(0, glyph.texture);
         sushi::draw_mesh(glyph.mesh);

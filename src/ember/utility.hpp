@@ -4,7 +4,7 @@
 
 #define EMBER_CAT_IMPL(A,B) A##B
 #define EMBER_CAT(A,B) EMBER_CAT_IMPL(A,B)
-#define EMBER_DEFER auto EMBER_CAT(_defer_, __LINE__) = ::utility::_defer{} + [&]()->void
+#define EMBER_DEFER auto EMBER_CAT(_defer_, __LINE__) = ::ember::utility::_defer{} + [&]()->void
 
 namespace ember::utility {
 

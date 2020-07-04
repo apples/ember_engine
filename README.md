@@ -64,6 +64,9 @@ Install the `blender-scripts/add-ons/iqm_export.py` script as an add-on and make
             }
             ```
 
+NOTE: Be patient with Intellisense while it's initializing, it can take a while to fully parse the project.
+Look for the flame icon in the status bar.
+
 ## Building
 
 ### Option 1 - Command line scripts
@@ -73,9 +76,7 @@ Install the `blender-scripts/add-ons/iqm_export.py` script as an add-on and make
 
 ### Option 2 - VSCode CMake Tools extension
 
-
-1. Using the kit in `cmake-tools-kits.json` as a guide, ensure that the proper kits are added to your CMake Tools config
-2. That's it I guess, use CMake Tools to build
+Use the CMake Tools extension to configure and run (see the [VSCode Setup](#vscode-setup) section for more info).
 
 ## Running
 
@@ -91,3 +92,7 @@ Oof.
 Debugging in-browser is not really feasible. The most you'll get is a stack trace.
 
 Once the native build is finished, it should make debugging way easier.
+
+## Documentation
+
+Everything about actually making a game is in the `doc` directory.

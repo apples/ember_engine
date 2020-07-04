@@ -3,6 +3,7 @@
 #include "scripting.hpp"
 #include "utility.hpp"
 #include "reflection.hpp"
+#include "net_id.hpp"
 
 #include <ginseng/ginseng.hpp>
 
@@ -34,21 +35,19 @@ class database : public ginseng::database {
     };
 
 public:
-    using net_id = std::int64_t;
-
     auto create_entity() -> ent_id;
 
-    auto create_entity(net_id id) -> ent_id;
+    auto create_entity(net_id::id_type id) -> ent_id;
 
-    void destroy_entity(net_id id);
+    void destroy_entity(net_id::id_type id);
 
     void destroy_entity(ent_id eid);
 
-    auto get_entity(net_id id) -> std::optional<ent_id>;
+    auto get_entity(net_id::id_type id) -> std::optional<ent_id>;
 
-    auto get_or_create_entity(net_id id) -> ent_id;
+    auto get_or_create_entity(net_id::id_type id) -> ent_id;
 
-    void on_destroy_entity(std::function<void(net_id id)> func);
+    void on_destroy_entity(std::function<void(net_id::id_type id)> func);
 
     template <typename... Coms>
     auto serialize_entity(ent_id eid) -> std::tuple<std::optional<Coms>...> {
@@ -97,9 +96,9 @@ public:
     }
 
 private:
-    net_id next_id = 1;
-    std::unordered_map<net_id, ent_id> netid_to_entid;
-    std::function<void(net_id id)> destroy_entity_callback;
+    net_id::id_type next_id = 1;
+    std::unordered_map<net_id::id_type, ent_id> netid_to_entid;
+    std::function<void(net_id::id_type id)> destroy_entity_callback;
     std::unordered_map<ginseng::_detail::type_guid, int> com_counts;
 };
 

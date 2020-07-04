@@ -1,6 +1,6 @@
 #pragma once
 
-#include <common/json.hpp>
+#include "../json.hpp"
 
 namespace emberjs {
 

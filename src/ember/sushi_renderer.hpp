@@ -19,8 +19,8 @@ public:
     sushi_renderer() = default;
     sushi_renderer(
         const glm::vec2& display_area,
-        basic_shader_program& program,
-        msdf_shader_program& program_msdf,
+        shaders::basic_shader_program& program,
+        shaders::msdf_shader_program& msdf_shader,
         cache<msdf_font>& font_cache,
         cache<sushi::mesh_group>& mesh_cache,
         cache<sushi::texture_2d>& texture_cache);
@@ -34,8 +34,8 @@ public:
 
 private:
     glm::vec2 display_area;
-    basic_shader_program* program;
-    msdf_shader_program* program_msdf;
+    shaders::basic_shader_program* program;
+    shaders::msdf_shader_program* msdf_shader;
     cache<msdf_font>* font_cache;
     cache<sushi::mesh_group>* mesh_cache;
     cache<sushi::texture_2d>* texture_cache;

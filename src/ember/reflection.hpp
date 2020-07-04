@@ -50,7 +50,7 @@ struct refl_traits {
 };
 
 template <typename T>
-struct refl_traits<T, std::void_t<decltype(reflect(std::declval<R::tag<T>>()))>> {
+struct refl_traits<T, std::void_t<decltype(reflect(std::declval<tag<T>>()))>> {
     static constexpr bool is_reflectable = true;
 };
 

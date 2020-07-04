@@ -1,6 +1,6 @@
 #include "config.hpp"
 
-#include <common/utility.hpp>
+#include "../utility.hpp"
 
 using json = nlohmann::json;
 
