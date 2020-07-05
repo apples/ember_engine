@@ -3,6 +3,7 @@
 #include "ember/component_common.hpp"
 #include "ember/entities.hpp"
 #include "ember/net_id.hpp"
+#include "ember/ez3d.hpp"
 
 #include <sushi/sushi.hpp>
 
@@ -25,13 +26,7 @@ struct transform : sushi::transform {};
 REFLECT(transform, (pos)(rot)(scl))
 
 /** Model used for rendering */
-struct render_model {
-    std::shared_ptr<sushi::mesh_group> mesh;
-    std::shared_ptr<sushi::texture_2d> texture;
-    std::shared_ptr<sushi::skeleton> skeleton;
-    std::optional<int> anim_index;
-    float anim_time;
-};
+struct render_model : ember::ez3d::model {};
 REFLECT(render_model, (mesh)(texture)(skeleton)(anim_index)(anim_time))
 
 /** Actor script used for various events */

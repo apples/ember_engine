@@ -40,11 +40,14 @@ Install the `blender-scripts/add-ons/iqm_export.py` script as an add-on and make
 2. Ensure that CMake and Ninja are available in your PATH and/or you've configured VS Code to know where they are.
     - In either your global or project settings,
         set the `"cmake.cmakePath"` setting to the path to your CMake executable.
-3. Using the included `cmake-tools-kits.json` as an example,
+3. Adjust your `"cmake.buildDirectory"` setting to your liking,
+    for example `${workspaceRoot}/build/${buildKit}-${buildType}`.
+    - If using nginx, make sure to adjust your `nginx.conf` to point to the correct build output directory.
+4. Using the included `cmake-tools-kits.json` as an example,
     add a new kit using the "CMake: Edit User-Local CMake Kits" command.
-3. Configure the project with CMake Tools, using the Emscripten kit in Release mode.
+5. Configure the project with CMake Tools, using the Emscripten kit in Release mode.
     - This will create a `build/` directory for you.
-4. Set up your C/C++ extension settings to find the compiler.
+6. Set up your C/C++ extension settings to find the compiler.
     - Normally this will happen automatically when configuring CMake, but some issues may arise.
     - If Intellisense is having trouble finding even local files,
         ensure that your C/C++ configuration provider is set to `ms-vscode.cmake-tools`.
@@ -83,7 +86,7 @@ Use the CMake Tools extension to configure and run (see the [VSCode Setup](#vsco
 Build output is in `build/<target>/www`, host this directory as a static site.
 
 You can use the included `serve.sh` to automatically download nginx and host the release build.
-Edit `nginx.conf` as desired.
+Edit `nginx.conf` as desired, making sure that the alias paths match your build output directory.
 
 ## Debugging
 

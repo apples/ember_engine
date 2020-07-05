@@ -1,7 +1,6 @@
-#ifndef CLIENT_STATE_GAMEPLAY_HPP
-#define CLIENT_STATE_GAMEPLAY_HPP
+#pragma once
 
-#include "ember/render_queue.hpp"
+#include "ember/ez3d.hpp"
 #include "ember/entities.hpp"
 #include "ember/scene.hpp"
 
@@ -24,9 +23,7 @@ public:
     virtual auto render_gui() -> sol::table override;
 
 private:
-    ember::render_queue renderq;
+    ember::ez3d::renderer renderer;
     ember::database entities;
     sol::table gui_state;
 };
-
-#endif // CLIENT_STATE_GAMEPLAY_HPP

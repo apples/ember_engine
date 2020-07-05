@@ -1,5 +1,4 @@
-#ifndef CLIENT_CONFIG_HPP
-#define CLIENT_CONFIG_HPP
+#pragma once
 
 #include "json.hpp"
 #include "json_serializers.hpp"
@@ -27,5 +26,3 @@ REFLECT(config, (display))
 } // namespace ember::config
 
 #include "reflection_end.hpp"
-
-#endif // CLIENT_CONFIG_HPP

@@ -2,6 +2,7 @@
 
 #include "components.hpp"
 
+#include "ember/camera.hpp"
 #include "ember/engine.hpp"
 #include "ember/vdom.hpp"
 
@@ -29,49 +30,15 @@ void scene_gameplay::tick(float delta) {
 }
 
 void scene_gameplay::render() {
-    auto proj = glm::ortho(-400.f, 400.f, -300.f, 300.f, -1.f, 1.f);
-    auto view = glm::mat4(1.f);
+    auto cam = ember::camera::perspective{};
 
-    glEnable(GL_DEPTH_TEST);
-    glDepthFunc(GL_LEQUAL);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    glEnable(GL_BLEND);
-    //glEnable(GL_SAMPLE_COVERAGE);
-    //glEnable(GL_SAMPLE_ALPHA_TO_COVERAGE);
-
-    engine->basic_shader.bind();
-    engine->basic_shader.set_cam_forward({0.0, 0.0, -1.0});
-    engine->basic_shader.set_tint({1, 1, 1, 1});
-    engine->basic_shader.set_hue(0);
-    engine->basic_shader.set_saturation(1);
-
-    renderq.prepare(engine->basic_shader, proj, view);
-
-    // Render entities
+    renderer.begin(engine, cam);
 
     entities.visit([&](const component::render_model& model, const component::transform& transform) {
-        if (model.mesh && model.texture) {
-            // Pose
-
-            std::optional<sushi::pose> pose;
-
-            if (model.skeleton) {
-                pose = sushi::get_pose(*model.skeleton, model.anim_index, model.anim_time, true);
-            }
-
-            // Render
-
-            auto item = ember::render_queue::item{};
-            item.transform = transform;
-            item.mesh = model.mesh;
-            item.texture = model.texture;
-            item.pose = pose;
-
-            renderq.add(item);
-        }
+        renderer.add(model, transform);
     });
 
-    renderq.render_items();
+    renderer.finish();
 }
 
 auto scene_gameplay::handle_game_input(const SDL_Event& event) -> bool {

@@ -64,7 +64,7 @@ void register_types(sol::table& lua) {
     vec4_type[sol::meta_function::new_index] = [](glm::vec4& v, int i, float x) { v[i] = x; };
     vec4_type[sol::meta_function::addition] = static_cast<rel<glm::vec4>>(glm::operator+);
     vec4_type[sol::meta_function::subtraction] = static_cast<rel<glm::vec4>>(glm::operator-);
-    vec4_type[sol::meta_function::multiplication] = static_cast<rel_s<glm::vec4, float>>(glm::operator*);
+    vec4_type[sol::meta_function::multiplication] = static_cast<rel_s<glm::vec4, const float&>>(glm::operator*);
     vec4_type["dot"] = static_cast<rel_r<glm::vec4, float>>(glm::dot);
 
     auto mat2_type = lua.new_usertype<glm::mat2>(
