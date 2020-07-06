@@ -6,7 +6,9 @@ namespace ember::reflection {
 
 /** Type tag used to get ADL for reflected types */
 template <typename T>
-struct tag {};
+struct tag {
+    using type = T;
+};
 
 /** Type member reflection info */
 template <auto P>

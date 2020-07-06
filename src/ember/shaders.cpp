@@ -12,6 +12,7 @@ basic_shader_program::basic_shader_program(const std::string& vert, const std::s
 
     uniforms.MVP = get_uniform_location("MVP");
     uniforms.normal_mat = get_uniform_location("normal_mat");
+    uniforms.uvmat = get_uniform_location("uvmat");
     uniforms.s_texture = get_uniform_location("s_texture");
     uniforms.cam_forward = get_uniform_location("cam_forward");
     uniforms.tint = get_uniform_location("tint");
@@ -27,6 +28,10 @@ void basic_shader_program::set_MVP(const glm::mat4& mat) {
 
 void basic_shader_program::set_normal_mat(const glm::mat4& mat) {
     sushi::set_current_program_uniform(uniforms.normal_mat, mat);
+}
+
+void basic_shader_program::set_uvmat(const glm::mat3& mat) {
+    sushi::set_current_program_uniform(uniforms.uvmat, mat);
 }
 
 void basic_shader_program::set_s_texture(GLint i) {

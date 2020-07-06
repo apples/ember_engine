@@ -2,11 +2,22 @@
 
 #include "scripting.hpp"
 #include "entities.hpp"
+#include "reflection.hpp"
 
 #include <type_traits>
 #include <utility>
 #include <iostream>
 #include <stdexcept>
+
+#define EMBER_REGISTER_ALL_COMPONENTS                                                                              \
+    using registered_types =                                                                                       \
+        decltype(_type_registry(std::declval<_type_registry_index<EMBER_REFLECTION_MAX_TYPES>>()));                \
+    using ember::component::register_usertype;                                                                     \
+    void register_all_components(sol::table& table) {                                                              \
+        std::apply(                                                                                                \
+            [&](auto... types) { (ember::scripting::register_type<typename decltype(types)::type>(table), ...); }, \
+            registered_types{});                                                                                   \
+    }
 
 namespace ember::component {
 namespace _detail {
@@ -28,7 +39,7 @@ void add_component(database& db, ent_id eid, T com) {
 template <typename T>
 void remove_component(database& db, ent_id eid) {
     if (!db.has_component<T>(eid)) {
-        auto name = std::string(meta::getName<T>());
+        auto name = std::string(reflect<T>().name);
         auto id = std::to_string(eid.get_index());
 
         throw std::runtime_error("Bad component removal: " + name + " from entity " + id);
@@ -40,7 +51,7 @@ void remove_component(database& db, ent_id eid) {
 template <typename T>
 auto get_component(database& db, ent_id eid) -> T& {
     if (!db.has_component<T>(eid)) {
-        auto name = std::string(meta::getName<T>());
+        auto name = std::string(reflect<T>().name);
         auto id = std::to_string(eid.get_index());
 
         throw std::runtime_error("Bad component access: " + name + " from entity " + id);

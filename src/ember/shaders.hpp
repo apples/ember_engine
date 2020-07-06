@@ -12,6 +12,7 @@ public:
 
     void set_MVP(const glm::mat4& mat);
     void set_normal_mat(const glm::mat4& mat);
+    void set_uvmat(const glm::mat3& mat);
     void set_s_texture(GLint i);
     void set_cam_forward(const glm::vec3& vec);
     void set_tint(const glm::vec4& v);
@@ -24,6 +25,7 @@ private:
     struct {
         GLint MVP;
         GLint normal_mat;
+        GLint uvmat;
         GLint s_texture;
         GLint cam_forward;
         GLint tint;

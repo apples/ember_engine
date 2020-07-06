@@ -13,21 +13,10 @@
 #include <string>
 #include <memory>
 
-#define EMBER_REFLECTION_ENABLE_REGISRTY
+#define EMBER_REFLECTION_ENABLE_REGISTRY
 #include "ember/reflection_start.hpp"
 
 namespace component {
-
-using ember::net_id;
-REFLECT(net_id, (id))
-
-/** World transform */
-struct transform : sushi::transform {};
-REFLECT(transform, (pos)(rot)(scl))
-
-/** Model used for rendering */
-struct render_model : ember::ez3d::model {};
-REFLECT(render_model, (mesh)(texture)(skeleton)(anim_index)(anim_time))
 
 /** Actor script used for various events */
 struct script {
@@ -35,6 +24,33 @@ struct script {
     int next_tick; /** Ticks until next update, if -1 then never updates */
 };
 REFLECT(script, (name)(next_tick))
+
+/** World transform */
+struct transform : sushi::transform {};
+REFLECT(transform, (pos)(rot)(scl))
+
+struct sprite {
+    std::string texture;
+    glm::vec2 size = {1, 1};
+    std::vector<int> frames;
+    float time = 0;
+};
+REFLECT(sprite, (texture)(size)(frames)(time))
+
+struct body {
+    enum type_t {
+        BALL,
+        PADDLE,
+        BRICK,
+        N_TYPES,
+    };
+
+    glm::vec2 size = {0, 0};
+    glm::vec2 vel = {0, 0};
+    type_t type;
+    std::array<bool, N_TYPES> collides_with = {};
+};
+REFLECT(body, (size)(vel)(type)(collides_with))
 
 } // namespace component
 

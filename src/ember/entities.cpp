@@ -18,8 +18,8 @@ auto database::create_entity(net_id::id_type id) -> ent_id {
         return iter->second;
     }
 
-    auto ent = database::create_entity();
-    database::add_component(ent, net_id{id});
+    auto ent = ginseng::database::create_entity();
+    ginseng::database::add_component(ent, net_id{id});
     netid_to_entid[id] = ent;
 
     return ent;
@@ -37,7 +37,7 @@ void database::destroy_entity(net_id::id_type id) {
         destroy_entity_callback(id);
     }
 
-    database::destroy_entity(iter->second);
+    ginseng::database::destroy_entity(iter->second);
     netid_to_entid.erase(iter);
 }
 
@@ -55,7 +55,7 @@ void database::destroy_entity(ent_id eid) {
         std::clog << "Warning: deleting entity that has no net_id!" << std::endl;
     }
 
-    database::destroy_entity(eid);
+    ginseng::database::destroy_entity(eid);
 }
 
 auto database::get_entity(net_id::id_type id) -> std::optional<ent_id> {
@@ -106,20 +106,36 @@ void register_type<database>(sol::table& lua) {
         },
         "get_or_create_entity", &database::get_or_create_entity,
         "add_component", [](database& db, database::ent_id eid, sol::userdata com){
-            return com["_add_component"](db, eid, com);
+            auto add_component = com["_add_component"];
+            if (!add_component.valid()) {
+                throw std::runtime_error("add_component: Component type missing _add_component");
+            }
+            return add_component(db, eid, com);
         },
         "remove_component", [](database& db, database::ent_id eid, sol::table com_type){
-            return com_type["_remove_component"](db, eid);
+            auto remove_component = com_type["_remove_component"];
+            if (!remove_component.valid()) {
+                throw std::runtime_error("remove_component: Component type missing _remove_component");
+            }
+            return remove_component(db, eid);
         },
         "get_component", [](database& db, std::optional<database::ent_id> eid, sol::table com_type){
             if (eid) {
-                return com_type["_get_component"](db, eid);
+                auto get_component = com_type["_get_component"];
+                if (!get_component.valid()) {
+                    throw std::runtime_error("get_component: Component type missing _get_component");
+                }
+                return get_component(db, eid);
             } else {
                 throw std::runtime_error("get_component: Null eid!");
             }
         },
         "has_component", [](database& db, database::ent_id eid, sol::table com_type){
-            return com_type["_has_component"](db, eid);
+            auto has_component = com_type["_has_component"];
+            if (!has_component.valid()) {
+                throw std::runtime_error("has_component: Component type missing _has_component");
+            }
+            return has_component(db, eid);
         },
         "visit", [](database& db, sol::protected_function func){
             db.visit([&func](database::ent_id eid) {

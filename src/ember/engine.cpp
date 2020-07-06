@@ -63,6 +63,7 @@ void engine::tick() try {
     if (queued_transition) {
         current_scene = queued_transition->factory(*this, current_scene.get());
         lua["scene"] = current_scene;
+        queued_transition = std::nullopt;
         current_scene->init();
     }
 

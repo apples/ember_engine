@@ -9,6 +9,7 @@ varying vec3 v_normal;
 
 uniform mat4 MVP;
 uniform mat4 normal_mat;
+uniform mat3 uvmat;
 uniform bool Animated;
 uniform mat4 Bones[32];
 
@@ -24,7 +25,7 @@ void main() {
                 Bones[int(VertexBlendIndices[3])] * VertexBlendWeights[3]);
     }
 
-    v_texcoord = VertexTexCoord;
+    v_texcoord = vec2(uvmat * vec3(VertexTexCoord, 1.0));
     v_normal = normalize(vec3(normal_mat * vec4(VertexNormal, 0.0)));
     gl_Position = transform * vec4(VertexPosition, 1.0);
 }

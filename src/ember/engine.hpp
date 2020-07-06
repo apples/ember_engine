@@ -80,11 +80,17 @@ private:
 template <typename... Ts>
 auto engine::call_script(const std::string& module_name, const std::string& function_name, Ts&&... args)
     -> sol::function_result {
+    lua["err_handler"] = [&](const std::string& err) {
+        lua.script("trace = debug.traceback()");
+        lua.script("print(debug.traceback())");
+        std::cout << "err_handler: " << err << std::endl;
+        return err + lua["trace"].get<std::string>();
+    };
     auto module_path = module_name;
     std::replace(begin(module_path), end(module_path), '.', '/');
     auto file_name = "data/scripts/" + module_path + ".lua";
     auto module = sol::table(lua.require_file(module_name, file_name));
-    auto func = sol::protected_function(module[function_name]);
+    auto func = sol::protected_function(module[function_name], lua["err_handler"]);
     auto result = func(std::forward<Ts>(args)...);
     if (result.valid()) {
         return result;
@@ -92,6 +98,7 @@ auto engine::call_script(const std::string& module_name, const std::string& func
         auto err = sol::error(result);
         auto oss = std::ostringstream{};
         oss << "ERROR: engine::call_script(\"" << module_name << "\", \"" << function_name << "\", ...): " << err.what()
+            << "(status = " << int(result.status()) << ")"
             << "\n";
         std::cerr << oss.str();
         throw std::runtime_error(oss.str());

@@ -6,8 +6,8 @@
 
 #include <tuple>
 
-#ifndef EMBER_COMPONENT_MAX_TYPES
-#define EMBER_COMPONENT_MAX_TYPES 32
+#ifndef EMBER_REFLECTION_MAX_TYPES
+#define EMBER_REFLECTION_MAX_TYPES 32
 #endif
 
 namespace component {
@@ -23,6 +23,6 @@ struct _type_registry_index : _type_registry_index<N - 1> {};
 template <>
 struct _type_registry_index<0> {};
 inline std::tuple<> _type_registry(_type_registry_index<0>) { return {}; }
-inline auto _type_registry(_type_registry_index<EMBER_COMPONENT_MAX_TYPES + 1>) = delete;
+inline void _type_registry(_type_registry_index<EMBER_REFLECTION_MAX_TYPES + 1>) = delete;
 
 } // namespace component

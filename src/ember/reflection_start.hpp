@@ -21,11 +21,12 @@
 #define EMBER_REFLECTION_GET_REGISTERED_TYPES \
     decltype(_type_registry(std::declval<_type_registry_index<EMBER_REFLECTION_MAX_TYPES>>()))
 
-#define EMBER_REFLECTION_REGISTER_TYPE(type)                                                                     \
-    inline decltype(                                                                                             \
-        std::tuple_cat(std::declval<EMBER_REFLECTION_GET_REGISTERED_TYPES>(), std::declval<std::tuple<type>>())) \
-    _type_registry(_type_registry_index<std::tuple_size_v<EMBER_REFLECTION_GET_REGISTERED_TYPES> + 1>) {         \
-        return {};                                                                                               \
+#define EMBER_REFLECTION_REGISTER_TYPE(type)                                                             \
+    inline decltype(std::tuple_cat(                                                                      \
+        std::declval<EMBER_REFLECTION_GET_REGISTERED_TYPES>(),                                           \
+        std::declval<std::tuple<::ember::reflection::tag<type>>>()))                                     \
+    _type_registry(_type_registry_index<std::tuple_size_v<EMBER_REFLECTION_GET_REGISTERED_TYPES> + 1>) { \
+        return {};                                                                                       \
     }
 #else
 #define EMBER_REFLECTION_GET_REGISTERED_TYPES

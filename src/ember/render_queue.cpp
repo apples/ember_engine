@@ -44,6 +44,7 @@ void render_queue::render_items() {
         basic_shader->set_tint(item.tint);
         basic_shader->set_normal_mat(glm::inverseTranspose(view * modelmat));
         basic_shader->set_MVP(proj * view * modelmat);
+        basic_shader->set_uvmat(glm::mat3(1.f));
 
         sushi::set_texture(0, *item.texture);
 

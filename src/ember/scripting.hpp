@@ -19,10 +19,10 @@ struct has_register<T, std::void_t<decltype(register_usertype(token<T>{}, std::d
 /** Registers the type T with Lua, calling register_usertype(token<T>) if available. */
 template <typename T>
 void register_type(sol::table& lua) {
+    auto usertype = lua.new_usertype<T>(reflect<T>().name);
+
     std::apply(
         [&](auto&&... members) {
-            auto usertype = lua.new_usertype<T>(reflect<T>().name);
-
             if constexpr (has_register<T>::value) {
                 register_usertype(token<T>{}, usertype);
             } else {

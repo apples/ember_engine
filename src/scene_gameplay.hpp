@@ -1,6 +1,6 @@
 #pragma once
 
-#include "ember/ez3d.hpp"
+#include "ember/camera.hpp"
 #include "ember/entities.hpp"
 #include "ember/scene.hpp"
 
@@ -23,7 +23,8 @@ public:
     virtual auto render_gui() -> sol::table override;
 
 private:
-    ember::ez3d::renderer renderer;
+    ember::camera::orthographic camera;
     ember::database entities;
     sol::table gui_state;
+    sushi::mesh_group sprite_mesh;
 };

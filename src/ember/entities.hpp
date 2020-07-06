@@ -61,7 +61,7 @@ public:
 
         ++com_counts[guid];
 
-        return database::add_component(eid, std::forward<T>(com));
+        return ginseng::database::add_component(eid, std::forward<T>(com));
     }
 
     template <typename T>
@@ -70,7 +70,7 @@ public:
 
         ++com_counts[guid];
 
-        return database::add_component(eid, com);
+        return ginseng::database::add_component(eid, com);
     }
 
     template <typename Com>
@@ -79,7 +79,7 @@ public:
 
         --com_counts[guid];
 
-        database::remove_component<Com>(eid);
+        ginseng::database::remove_component<Com>(eid);
     }
 
     template <typename Com>

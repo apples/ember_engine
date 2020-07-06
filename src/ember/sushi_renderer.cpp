@@ -84,6 +84,7 @@ void sushi_renderer::draw_rectangle(const std::string& texture, const glm::vec4&
     program->set_cam_forward({0.0, 0.0, -1.0});
     program->set_normal_mat(glm::inverseTranspose(model_mat));
     program->set_MVP(proj * model_mat);
+    program->set_uvmat(glm::mat3(1.f));
     program->set_tint(color);
     program->set_hue(0);
     program->set_saturation(1);
@@ -108,6 +109,7 @@ void sushi_renderer::draw_model(const std::string& mesh, const std::string& text
     program->set_cam_forward({0.0, 0.0, -1.0});
     program->set_normal_mat(glm::inverseTranspose(view * model_mat));
     program->set_MVP(proj * view * model_mat);
+    program->set_uvmat(glm::mat3(1.f));
     program->set_tint({1, 1, 1, 1});
     program->set_hue(0);
     program->set_saturation(1);
