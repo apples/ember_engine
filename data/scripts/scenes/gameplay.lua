@@ -1,43 +1,47 @@
+local new_ball = require('archetypes.ball')
+local new_paddle = require('archetypes.paddle')
 
 local scene = {}
 
-local function make_paddle()
-    local sprite = component.sprite.new()
-    sprite.texture = "sprites";
-    sprite.size.y = 1/4
-    sprite.frames:add(1)
-
+local function make_walls()
     local transform = component.transform.new()
-    transform.scl.x = 4
+    transform.pos.y = 16
 
-    local test = entities:create_entity()
-    entities:add_component(test, sprite)
-    entities:add_component(test, transform)
-end
+    local body = component.body.new()
+    body.type = 0
+    body.layer = 2
+    body.size.x = 32
+    body.size.y = 2
 
-local function make_ball()
-    local sprite = component.sprite.new()
-    sprite.texture = "sprites";
-    sprite.size.x = 1/8
-    sprite.size.y = 1/8
-    sprite.frames:add(1)
-    sprite.frames:add(0)
-    sprite.frames:add(8)
-    sprite.frames:add(0)
+    local eid = entities:create_entity()
+    entities:add_component(eid, transform)
+    entities:add_component(eid, body)
 
-    local transform = component.transform.new()
-    transform.scl.x = 0.5
-    transform.scl.y = 0.5
+    local function spawn_vertical_wall(x)
+        local transform = component.transform.new()
+        transform.pos.x = x
 
-    local test = entities:create_entity()
-    entities:add_component(test, sprite)
-    entities:add_component(test, transform)
+        local body = component.body.new()
+        body.type = 0
+        body.layer = 2
+        body.size.x = 2
+        body.size.y = 32
+
+        local eid = entities:create_entity()
+        entities:add_component(eid, transform)
+        entities:add_component(eid, body)
+    end
+
+    spawn_vertical_wall(16)
+    spawn_vertical_wall(-16)
 end
 
 function scene.init()
     print('Initializing gameplay...')
 
-    make_ball()
+    new_ball()
+    new_paddle()
+    make_walls()
 
     print('Initialized gameplay.')
 end

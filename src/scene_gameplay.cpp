@@ -1,6 +1,8 @@
 #include "scene_gameplay.hpp"
 
+#include "scene_mainmenu.hpp"
 #include "components.hpp"
+#include "meshes.hpp"
 
 #include "ember/camera.hpp"
 #include "ember/engine.hpp"
@@ -11,92 +13,6 @@
 
 #include <sushi/sushi.hpp>
 
-namespace {
-
-auto get_sprite_mesh() -> sushi::mesh_group {
-    sushi::mesh_group_builder mb;
-    mb.enable(sushi::attrib_location::POSITION);
-    mb.enable(sushi::attrib_location::TEXCOORD);
-    mb.enable(sushi::attrib_location::NORMAL);
-
-    mb.mesh("sprite");
-
-    auto left = -0.5f;
-    auto right = 0.5f;
-    auto bottom = -0.5f;
-    auto top = 0.5f;
-
-    auto bottomleft = mb.vertex().position({left, bottom, 0}).texcoord({0, 1}).normal({0, 1, 0}).get();
-    auto topleft = mb.vertex().position({left, top, 0}).texcoord({0, 0}).normal({0, 1, 0}).get();
-    auto bottomright = mb.vertex().position({right, bottom, 0}).texcoord({1, 1}).normal({0, 1, 0}).get();
-    auto topright = mb.vertex().position({right, top, 0}).texcoord({1, 0}).normal({0, 1, 0}).get();
-
-    mb.tri(bottomleft, topleft, topright);
-    mb.tri(topright, bottomright, bottomleft);
-
-    return mb.get();
-}
-
-auto get_tilemap_mesh() -> sushi::mesh_group {
-    sushi::mesh_group_builder mb;
-    mb.enable(sushi::attrib_location::POSITION);
-    mb.enable(sushi::attrib_location::TEXCOORD);
-    mb.enable(sushi::attrib_location::NORMAL);
-
-    mb.mesh("tilemap");
-
-    for (int r = 0; r < 32; ++r) {
-        for (int c = 0; c < 32; ++c) {
-            auto left = -15.5f + c;
-            auto right = left + 1;
-            auto top = 15.5f - r;
-            auto bottom = top - 1;
-
-            float uvleft, uvright, uvtop, uvbottom;
-
-            if (r == 0 || c == 0 || c == 31) {
-                uvleft = 0.25;
-                uvright = 0.5;
-                uvtop = 0.75;
-                uvbottom = 1;
-            } else {
-                uvleft = 0;
-                uvright = 0.25;
-                uvtop = 0.75;
-                uvbottom = 1;
-            }
-
-            auto bottomleft = mb.vertex()
-                .position({left, bottom, 0})
-                .texcoord({uvleft, uvbottom})
-                .normal({0, 1, 0})
-                .get();
-            auto topleft = mb.vertex()
-                .position({left, top, 0})
-                .texcoord({uvleft, uvtop})
-                .normal({0, 1, 0})
-                .get();
-            auto bottomright = mb.vertex()
-                .position({right, bottom, 0})
-                .texcoord({uvright, uvbottom})
-                .normal({0, 1, 0})
-                .get();
-            auto topright = mb.vertex()
-                .position({right, top, 0})
-                .texcoord({uvright, uvtop})
-                .normal({0, 1, 0})
-                .get();
-
-            mb.tri(bottomleft, topleft, topright);
-            mb.tri(topright, bottomright, bottomleft);
-        }
-    }
-
-    return mb.get();
-}
-
-} // namespace
-
 // Scene constructor
 // Initializes private members and loads any prerequisite assets (usually small ones!).
 // Scene is not actually the current scene yet, so interactions with the engine state and rendering are forbidden.
@@ -104,9 +20,11 @@ scene_gameplay::scene_gameplay(ember::engine& engine, ember::scene* prev)
     : scene(engine),
       camera(), // Camera has a sane default constructor, it is tweaked below
       entities(), // Entity database has no constructor parameters
+      physics(), // Physics system
       gui_state{engine.lua.create_table()}, // Gui state is initialized to an empty Lua table
       sprite_mesh{get_sprite_mesh()}, // Sprite and tilemap meshes is created statically
-      tilemap_mesh{get_tilemap_mesh()} {
+      tilemap_mesh{get_tilemap_mesh()},
+      lives(3) {
     camera.height = 32; // Height of the camera viewport in world units, in this case 32 tiles
     camera.near = -1; // Near plane of an orthographic view is away from camera, so this is actually +1 view range on Z
 }
@@ -118,6 +36,13 @@ scene_gameplay::scene_gameplay(ember::engine& engine, ember::scene* prev)
 void scene_gameplay::init() {
     // We want scripts to have access to the entities as a global variable, so it is set here.
     engine->lua["entities"] = std::ref(entities);
+    engine->lua["lose_life"] = [this]{
+        if (lives == 0) {
+            engine->queue_transition<scene_mainmenu>();
+        } else {
+            lives -= 1;
+        }
+    };
     // Call the "init" function in the "data/scripts/scenes/gameplay.lua" script, with no params.
     engine->call_script("scenes.gameplay", "init");
 }
@@ -127,7 +52,7 @@ void scene_gameplay::init() {
 // Updates gui_state as necessary.
 // Basically does everything except rendering.
 void scene_gameplay::tick(float delta) {
-    gui_state["health"] = 3;
+    gui_state["health"] = lives;
     gui_state["max_health"] = 3;
     gui_state["score"] = 0;
 
@@ -138,6 +63,9 @@ void scene_gameplay::tick(float delta) {
     entities.visit([&](component::sprite& sprite) {
         sprite.time += delta;
     });
+
+    // Physics system
+    physics.step(entities, delta);
 }
 
 // Render function
@@ -208,6 +136,39 @@ void scene_gameplay::render() {
 
 // Handle input events, called asynchronously
 auto scene_gameplay::handle_game_input(const SDL_Event& event) -> bool {
+    using component::controller;
+
+    // Updates a single key for all controllers
+    auto update = [&](bool press, bool controller::*key, bool controller::*pressed) {
+        entities.visit([&](controller& con) {
+            if (key) con.*key = press;
+            if (pressed) con.*pressed = press;
+        });
+    };
+
+    // Processes a key event
+    auto process_key = [&](const SDL_KeyboardEvent& key){
+        auto pressed = key.state == SDL_PRESSED;
+        switch (key.keysym.sym) {
+            case SDLK_LEFT:
+                update(pressed, &controller::left, nullptr);
+                return true;
+            case SDLK_RIGHT:
+                update(pressed, &controller::right, nullptr);
+                return true;
+            case SDLK_SPACE:
+                update(pressed, nullptr, &controller::action_pressed);
+                return true;
+            default:
+                return false;
+        }
+    };
+
+    switch (event.type) {
+        case SDL_KEYDOWN:
+        case SDL_KEYUP:
+            return process_key(event.key);
+    }
     return false;
 }
 

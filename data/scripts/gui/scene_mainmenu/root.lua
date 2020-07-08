@@ -7,8 +7,7 @@ return function(props)
             'label',
             {
                 halign = 'center',
-                valign = 'center',
-                top = 80,
+                bottom = 720/2 + 80,
                 color = '#fff',
                 text = 'Sample Game',
                 height = 24,
@@ -18,8 +17,7 @@ return function(props)
             'label',
             {
                 halign = 'center',
-                valign = 'center',
-                top = 20,
+                bottom = 720/2 - 20,
                 color = '#fff',
                 text = '[NEW GAME]',
                 height = 24,

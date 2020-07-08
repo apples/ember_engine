@@ -1,5 +1,7 @@
 #pragma once
 
+#include "physics.hpp"
+
 #include "ember/camera.hpp"
 #include "ember/entities.hpp"
 #include "ember/scene.hpp"
@@ -25,7 +27,9 @@ public:
 private:
     ember::camera::orthographic camera;
     ember::database entities;
+    physics_system physics;
     sol::table gui_state;
     sushi::mesh_group sprite_mesh;
     sushi::mesh_group tilemap_mesh;
+    int lives;
 };

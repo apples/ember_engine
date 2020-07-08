@@ -21,9 +21,8 @@ namespace component {
 /** Actor script used for various events */
 struct script {
     std::string name; /** Script name within the 'actors.' namespace */
-    int next_tick; /** Ticks until next update, if -1 then never updates */
 };
-REFLECT(script, (name)(next_tick))
+REFLECT(script, (name))
 
 /** World transform */
 struct transform : sushi::transform {};
@@ -39,18 +38,32 @@ REFLECT(sprite, (texture)(size)(frames)(time))
 
 struct body {
     enum type_t {
+        STATIC,
+        KINEMATIC,
+        DYNAMIC
+    };
+
+    enum layer_t {
         BALL,
         PADDLE,
         BRICK,
         N_TYPES,
     };
 
+    type_t type;
+    layer_t layer;
+    std::array<bool, N_TYPES> collides_with = {};
     glm::vec2 size = {0, 0};
     glm::vec2 vel = {0, 0};
-    type_t type;
-    std::array<bool, N_TYPES> collides_with = {};
 };
-REFLECT(body, (size)(vel)(type)(collides_with))
+REFLECT(body, (size)(vel)(type)(layer)(collides_with))
+
+struct controller {
+    bool left = false;
+    bool right = false;
+    bool action_pressed = false;
+};
+REFLECT(controller, (left)(right)(action_pressed))
 
 } // namespace component
 
