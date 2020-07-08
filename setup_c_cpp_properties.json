@@ -1,0 +1,21 @@
+{
+    "configurations": [
+        {
+            "name": "Emscripten",
+            "defines": [
+                "_DEBUG",
+                "UNICODE",
+                "_UNICODE"
+            ],
+            "includePath": [
+                "${env:USERPROFILE}/.emscripten_cache/wasm-obj/include"
+            ],
+            "compilerPath": "${workspaceFolder}/.pkg/emsdk/upstream/emscripten/em++.bat",
+            "cStandard": "c11",
+            "cppStandard": "c++17",
+            "intelliSenseMode": "clang-x64",
+            "configurationProvider": "ms-vscode.cmake-tools"
+        }
+    ],
+    "version": 4
+}

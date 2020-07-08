@@ -1,5 +1,12 @@
 # Ember
 
+## EZMODE Setup
+
+Just run `setup.ps1` and everything should mostly be taken care of.
+Software packages will be installed to `.pkg`.
+
+Then run `launch_vscode.ps1` to run VS Code with everything set up.
+
 ## Prerequisites
 
 - CMake

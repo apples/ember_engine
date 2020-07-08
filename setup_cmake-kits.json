@@ -1,0 +1,10 @@
+[
+  {
+    "name": "Emscripten (.pkg)",
+    "toolchainFile": "${workspaceFolder}\\.pkg\\emsdk\\upstream\\emscripten\\cmake\\Modules\\Platform\\Emscripten.cmake",
+    "compilers": {
+      "C": "${workspaceFolder}\\.pkg\\emsdk\\upstream\\emscripten\\emcc.bat",
+      "CXX": "${workspaceFolder}\\.pkg\\emsdk\\upstream\\emscripten\\em++.bat"
+    }
+  }
+]

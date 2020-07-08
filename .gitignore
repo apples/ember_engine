@@ -1,5 +1,7 @@
 # Common
 /.nginx
+/.pkg
+/.tmp
 /.vs
 /.vscode
 /build
