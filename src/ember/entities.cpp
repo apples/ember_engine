@@ -20,7 +20,7 @@ auto database::create_entity(net_id::id_type id) -> ent_id {
 
     auto ent = ginseng::database::create_entity();
     ginseng::database::add_component(ent, net_id{id});
-    netid_to_entid[id] = ent;
+    netid_to_entid.insert_or_assign(id, ent);
 
     return ent;
 }
@@ -95,6 +95,7 @@ void register_type<database>(sol::table& lua) {
         "destroy_entity", sol::overload(
             sol::resolve<void(net_id::id_type)>(&database::destroy_entity),
             sol::resolve<void(database::ent_id)>(&database::destroy_entity)),
+        "exists", &database::exists,
         "get_entity", [](database& db, net_id::id_type id, sol::this_state s) -> sol::object {
             auto lua = sol::state_view(s);
             auto eid = db.get_entity(id);

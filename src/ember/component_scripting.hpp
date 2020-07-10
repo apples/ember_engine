@@ -49,7 +49,7 @@ void remove_component(database& db, ent_id eid) {
 }
 
 template <typename T>
-auto get_component(database& db, ent_id eid) -> T& {
+auto get_component(database& db, ent_id eid) -> T* {
     if (!db.has_component<T>(eid)) {
         auto name = std::string(reflect<T>().name);
         auto id = std::to_string(eid.get_index());
@@ -57,7 +57,7 @@ auto get_component(database& db, ent_id eid) -> T& {
         throw std::runtime_error("Bad component access: " + name + " from entity " + id);
     }
 
-    return db.get_component<T>(eid);
+    return db.get_component<T*>(eid);
 }
 
 template <typename T>
