@@ -1,11 +1,18 @@
 # Ember
 
+Download the [latest release](https://github.com/apples/ember_engine/releases/latest)
+and unzip it into a new project directory.
+
+Make sure to initialize a new git repository for the project, and add the submodules listed in `.gitmodules`.
+
 ## EZMODE Setup
 
 Just run `setup.ps1` and everything should mostly be taken care of.
 Software packages will be installed to `.pkg`.
 
 Then run `launch_vscode.ps1` to run VS Code with everything set up.
+
+Alternatively, follow the setup steps below for a more controlled setup.
 
 ## Prerequisites
 
