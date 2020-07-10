@@ -2,10 +2,10 @@
 
 #include "components.hpp"
 
-void physics_system::step(ember::database& entities, float delta) {
+void physics_system::step(ember::engine& engine, ember::database& entities, float delta) {
     time += delta;
 
-    delta = 1.f/60.f;
+    delta = 1.f/240.f;
 
     auto n_steps = int(time / delta);
 
@@ -17,6 +17,7 @@ void physics_system::step(ember::database& entities, float delta) {
         };
 
         struct world_object : manifold {
+            ember::database::ent_id eid;
             component::body* body;
             component::transform* transform;
         };
@@ -24,7 +25,7 @@ void physics_system::step(ember::database& entities, float delta) {
         std::vector<world_object> objects;
         objects.reserve(entities.count_components<component::body>());
 
-        entities.visit([&](component::body& body, component::transform& transform){
+        entities.visit([&](ember::database::ent_id eid, component::body& body, component::transform& transform){
             transform.pos += glm::vec3{body.vel * delta, 0};
             objects.push_back({
                 {
@@ -33,6 +34,7 @@ void physics_system::step(ember::database& entities, float delta) {
                     transform.pos.y - body.size.y/2,
                     transform.pos.y + body.size.y/2,
                 },
+                eid,
                 &body,
                 &transform,
             });
@@ -47,7 +49,7 @@ void physics_system::step(ember::database& entities, float delta) {
 
         for (auto& obj : objects) {
             current.erase(std::remove_if(begin(current), end(current), [&](auto* a){
-                return a->right < obj.left;
+                return a->right < obj.left || !entities.exists(a->eid);
             }), end(current));
 
             for (auto& obj2 : current) {
@@ -67,6 +69,28 @@ void physics_system::step(ember::database& entities, float delta) {
                     if (b.body->type < a.body->type) {
                         std::swap(a, b);
                     }
+
+                    // Pre-collide
+                    if (auto b_script = entities.get_component<component::script*>(b.eid)) {
+                        engine.call_script("systems.physics", "pre_collide", "actors."+b_script->name, b.eid, a.eid);
+                        if (!entities.exists(obj.eid)) {
+                            break;
+                        }
+                        if (!entities.exists(obj2->eid)) {
+                            continue;
+                        }
+                    }
+                    if (auto a_script = entities.get_component<component::script*>(a.eid)) {
+                        engine.call_script("systems.physics", "pre_collide", "actors."+a_script->name, a.eid, b.eid);
+                        if (!entities.exists(obj.eid)) {
+                            break;
+                        }
+                        if (!entities.exists(obj2->eid)) {
+                            continue;
+                        }
+                    }
+
+                    // Collide
                     if (a.body->type == type_t::DYNAMIC && b.body->type == type_t::DYNAMIC) {
                         if (w < h) {
                             auto resolve_x = w/2;
@@ -134,6 +158,23 @@ void physics_system::step(ember::database& entities, float delta) {
                             b.transform->pos.y -= resolve_y;
                             b.left -= resolve_y;
                             b.right -= resolve_y;
+                        }
+                    }
+
+                    // Post-collide
+                    if (auto b_script = entities.get_component<component::script*>(b.eid)) {
+                        engine.call_script("systems.physics", "post_collide", "actors."+b_script->name, b.eid, a.eid);
+                        if (!entities.exists(obj.eid)) {
+                            break;
+                        }
+                        if (!entities.exists(obj2->eid)) {
+                            continue;
+                        }
+                    }
+                    if (auto a_script = entities.get_component<component::script*>(a.eid)) {
+                        engine.call_script("systems.physics", "post_collide", "actors."+a_script->name, a.eid, b.eid);
+                        if (!entities.exists(obj.eid)) {
+                            break;
                         }
                     }
                 }

@@ -65,7 +65,7 @@ void scene_gameplay::tick(float delta) {
     });
 
     // Physics system
-    physics.step(entities, delta);
+    physics.step(*engine, entities, delta);
 }
 
 // Render function

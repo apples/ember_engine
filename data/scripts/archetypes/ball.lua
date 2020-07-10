@@ -17,7 +17,7 @@ return function()
     body.layer = 0
     body.size.x = 0.5
     body.size.y = 0.5
-    body.vel.x = (math.random() * 2 - 1) * 25
+    body.vel.x = (math.random() * 2 - 1) * 15
     body.vel.y = -20
     body.collides_with[1] = true
     body.collides_with[2] = true
@@ -31,4 +31,5 @@ return function()
     entities:add_component(eid, transform)
     entities:add_component(eid, body)
     entities:add_component(eid, script)
+    entities:add_component(eid, component.tag_brick_breaker.new())
 end

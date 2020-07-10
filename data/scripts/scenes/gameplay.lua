@@ -1,5 +1,6 @@
 local new_ball = require('archetypes.ball')
 local new_paddle = require('archetypes.paddle')
+local new_brick = require('archetypes.brick')
 
 local scene = {}
 
@@ -42,6 +43,12 @@ function scene.init()
     new_ball()
     new_paddle()
     make_walls()
+
+    for r = 1, 5 do
+        for c = 1, 11 do
+            new_brick(-12 + c * 2, 4 + r)
+        end
+    end
 
     print('Initialized gameplay.')
 end

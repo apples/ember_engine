@@ -18,6 +18,9 @@
 
 namespace component {
 
+using tag_brick_breaker = ginseng::tag<struct tag_brick_breaker_t>;
+REFLECT(tag_brick_breaker)
+
 /** Actor script used for various events */
 struct script {
     std::string name; /** Script name within the 'actors.' namespace */
