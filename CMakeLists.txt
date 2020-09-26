@@ -18,6 +18,8 @@ if(EMSCRIPTEN AND EMBER_WASM_ENABLE_EXCEPTIONS)
     )
 endif()
 
+include(ExternalProject)
+
 add_subdirectory(ext/ginseng)
 add_subdirectory(ext/lua)
 add_subdirectory(ext/sol2)
@@ -37,6 +39,10 @@ if(EMSCRIPTEN)
     add_subdirectory(ext/sushi)
     add_subdirectory(ext/msdfgen)
     add_subdirectory(ext/soloud)
+
+    option(BOX2D_BUILD_UNIT_TESTS "Build the Box2D unit tests" OFF)
+    option(BOX2D_BUILD_TESTBED "Build the Box2D testbed" OFF)
+    add_subdirectory(ext/box2d)
 
     # Static Files
     file(GLOB_RECURSE EMBER_STATIC CONFIGURE_DEPENDS static/*)
@@ -120,7 +126,8 @@ if(EMSCRIPTEN)
         sushi
         sol2
         msdfgen
-        soloud)
+        soloud
+        box2d)
     add_dependencies(ember_game ember_static ember_data)
 else()
     message(FATAL_ERROR "You're on your own for this one")
