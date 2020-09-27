@@ -384,6 +384,32 @@ void box2d_lua_enable(sol::state& lua) {
     b2ContactImpulse_ut["count"] = &b2ContactImpulse::count;
     b2ContactImpulse_ut["normalImpulses"] = &b2ContactImpulse::normalImpulses;
     b2ContactImpulse_ut["tangentImpulses"] = &b2ContactImpulse::tangentImpulses;
+
+    auto b2JointDef_ut = lua.new_usertype<b2JointDef>("b2JointDef", sol::constructors<b2JointDef()>{});
+    b2JointDef_ut["bodyA"] = &b2JointDef::bodyA;
+    b2JointDef_ut["bodyB"] = &b2JointDef::bodyB;
+    b2JointDef_ut["collideConnected"] = &b2JointDef::collideConnected;
+    b2JointDef_ut["type"] = &b2JointDef::type;
+    b2JointDef_ut["userData"] = &b2JointDef::userData;
+
+    auto b2PrismaticJointDef_ut = lua.new_usertype<b2PrismaticJointDef>(
+        "b2PrismaticJointDef", sol::constructors<b2PrismaticJointDef()>{}, sol::base_classes, sol::bases<b2JointDef>{});
+    b2PrismaticJointDef_ut["bodyA"] = &b2PrismaticJointDef::bodyA;
+    b2PrismaticJointDef_ut["bodyB"] = &b2PrismaticJointDef::bodyB;
+    b2PrismaticJointDef_ut["collideConnected"] = &b2PrismaticJointDef::collideConnected;
+    b2PrismaticJointDef_ut["type"] = &b2PrismaticJointDef::type;
+    b2PrismaticJointDef_ut["userData"] = &b2PrismaticJointDef::userData;
+    b2PrismaticJointDef_ut["Initialize"] = &b2PrismaticJointDef::Initialize;
+    b2PrismaticJointDef_ut["enableLimit"] = &b2PrismaticJointDef::enableLimit;
+    b2PrismaticJointDef_ut["enableMotor"] = &b2PrismaticJointDef::enableMotor;
+    b2PrismaticJointDef_ut["localAnchorA"] = &b2PrismaticJointDef::localAnchorA;
+    b2PrismaticJointDef_ut["localAnchorB"] = &b2PrismaticJointDef::localAnchorB;
+    b2PrismaticJointDef_ut["localAxisA"] = &b2PrismaticJointDef::localAxisA;
+    b2PrismaticJointDef_ut["lowerTranslation"] = &b2PrismaticJointDef::lowerTranslation;
+    b2PrismaticJointDef_ut["maxMotorForce"] = &b2PrismaticJointDef::maxMotorForce;
+    b2PrismaticJointDef_ut["motorSpeed"] = &b2PrismaticJointDef::motorSpeed;
+    b2PrismaticJointDef_ut["referenceAngle"] = &b2PrismaticJointDef::referenceAngle;
+    b2PrismaticJointDef_ut["upperTranslation"] = &b2PrismaticJointDef::upperTranslation;
 }
 
 } // namespace ember
