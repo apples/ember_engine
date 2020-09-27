@@ -10,7 +10,7 @@ void physics_system::step(ember::engine& engine, ember::database& entities, floa
     auto n_steps = int(time / delta);
 
     for (int i = 0; i < n_steps; ++i) {
-        using type_t = component::body::type_t;
+        using type_t = body::type_t;
 
         struct manifold {
             float left, right, bottom, top;
@@ -18,14 +18,14 @@ void physics_system::step(ember::engine& engine, ember::database& entities, floa
 
         struct world_object : manifold {
             ember::database::ent_id eid;
-            component::body* body;
+            body* body;
             component::transform* transform;
         };
 
         std::vector<world_object> objects;
-        objects.reserve(entities.count_components<component::body>());
+        objects.reserve(entities.count_components<body>());
 
-        entities.visit([&](ember::database::ent_id eid, component::body& body, component::transform& transform){
+        entities.visit([&](ember::database::ent_id eid, body& body, component::transform& transform){
             transform.pos += glm::vec3{body.vel * delta, 0};
             objects.push_back({
                 {

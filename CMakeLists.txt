@@ -27,7 +27,7 @@ add_subdirectory(ext/sol2)
 target_compile_definitions(sol2 INTERFACE SOL_CXX17_FEATURES=1)
 
 if(EMSCRIPTEN)
-    find_package(PythonInterp 2 REQUIRED)
+    find_package(Python REQUIRED COMPONENTS Interpreter)
     find_package(Blender 2.80 REQUIRED)
 
     set(EMBER_WWW_DIR "${CMAKE_BINARY_DIR}/www" CACHE PATH "Output Directory")
@@ -76,14 +76,16 @@ if(EMSCRIPTEN)
     set(FILE_PACKAGER $ENV{EMSDK}/upstream/emscripten/tools/file_packager.py)
     set(EMBER_DATA_FILE ${EMBER_WWW_DIR}/ember_game.data)
     set(EMBER_DATA_LOADER ${EMBER_WWW_DIR}/ember_game.data.js)
+    set(EMBER_DATA_PRELOAD_DIRS "${EMBER_DATA_DIR}@data")
+    if(EXISTS "${EMBER_DATA_DST}")
+        list(APPEND EMBER_DATA_PRELOAD_DIRS "${EMBER_DATA_DST}@data")
+    endif()
     add_custom_command(
         OUTPUT ${EMBER_DATA_FILE} ${EMBER_DATA_LOADER}
         COMMAND "${PYTHON_EXECUTABLE}"
             "${FILE_PACKAGER}"
             "${EMBER_DATA_FILE}"
-            --preload
-                "${EMBER_DATA_DIR}@data"
-                "${EMBER_DATA_DST}@data"
+            --preload ${EMBER_DATA_PRELOAD_DIRS}
             "--js-output=${EMBER_DATA_LOADER}"
         COMMENT "Packaging data files"
         DEPENDS ${EMBER_DATA_FILES})

@@ -4,6 +4,7 @@
 #include "components.hpp"
 #include "meshes.hpp"
 
+#include "ember/box2d_helpers.hpp"
 #include "ember/camera.hpp"
 #include "ember/engine.hpp"
 #include "ember/vdom.hpp"
@@ -20,7 +21,8 @@ scene_gameplay::scene_gameplay(ember::engine& engine, ember::scene* prev)
     : scene(engine),
       camera(), // Camera has a sane default constructor, it is tweaked below
       entities(), // Entity database has no constructor parameters
-      physics(), // Physics system
+      world({0, 0}), // Physics system
+      timestep(), // Fixed timestep
       gui_state{engine.lua.create_table()}, // Gui state is initialized to an empty Lua table
       sprite_mesh{get_sprite_mesh()}, // Sprite and tilemap meshes is created statically
       tilemap_mesh{get_tilemap_mesh()},
@@ -34,8 +36,12 @@ scene_gameplay::scene_gameplay(ember::engine& engine, ember::scene* prev)
 // Used to initialize Lua state, initialize world, populate entities, etc.
 // Basically "load the stage".
 void scene_gameplay::init() {
-    // We want scripts to have access to the entities as a global variable, so it is set here.
+    // Initialize Box2D to be available for Lua. This is idempotent, so we can run it every init.
+    ember::box2d_lua_enable(engine->lua);
+
+    // We want scripts to have access to the entities and other things as a global variables, so they are set here.
     engine->lua["entities"] = std::ref(entities);
+    engine->lua["world"] = std::ref(world);
     engine->lua["lose_life"] = [this]{
         if (lives == 0) {
             engine->queue_transition<scene_mainmenu>();
@@ -43,6 +49,10 @@ void scene_gameplay::init() {
             lives -= 1;
         }
     };
+    engine->lua["queue_destroy"] = [this](ember::database::ent_id eid) {
+        destroy_queue.push_back(eid);
+    };
+
     // Call the "init" function in the "data/scripts/scenes/gameplay.lua" script, with no params.
     engine->call_script("scenes.gameplay", "init");
 }
@@ -65,7 +75,26 @@ void scene_gameplay::tick(float delta) {
     });
 
     // Physics system
-    physics.step(*engine, entities, delta);
+    if (timestep.step(world, delta)) {
+        entities.visit([](const component::rigid_body& body, component::transform& transform) {
+            auto t = body.body->GetTransform();
+            transform.pos = {t.p.x, t.p.y, 0};
+            transform.rot = glm::angleAxis(t.q.GetAngle(), glm::vec3{0, 0, 1});
+        });
+    }
+
+    // Dead entity cleanup
+    std::sort(begin(destroy_queue), end(destroy_queue), [](auto& a, auto& b) {
+        return a.get_index() < b.get_index();
+    });
+    destroy_queue.erase(std::unique(begin(destroy_queue), end(destroy_queue)), end(destroy_queue));
+    for (const auto& eid : destroy_queue) {
+        if (auto rb = entities.get_component<component::rigid_body*>(eid)) {
+            world.DestroyBody(rb->body);
+        }
+        entities.destroy_entity(eid);
+    }
+    destroy_queue.clear();
 }
 
 // Render function

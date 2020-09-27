@@ -8,12 +8,18 @@ return function()
     transform.pos.y = -14.5
     transform.scl.x = 4
 
-    local body = component.body.new()
-    body.type = 1
-    body.layer = 1
-    body.size.x = 4
-    body.size.y = 1
-    body.collides_with[3] = true
+    local bodyDef = b2BodyDef.new()
+    bodyDef.type = b2BodyType.b2_dynamicBody
+    bodyDef.fixedRotation = true
+    bodyDef.position:Set(transform.pos.x, transform.pos.y)
+    bodyDef.linearDamping = 1
+
+    local shape = b2PolygonShape.new()
+    shape:SetAsBox(2, 0.5)
+
+    local body = component.rigid_body.new()
+    body.body = world:CreateBody(bodyDef)
+    body.body:CreateFixture(shape, 1)
 
     local controller = component.controller.new()
 

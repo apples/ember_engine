@@ -1,5 +1,6 @@
 #pragma once
 
+#include <iterator>
 #include <utility>
 
 #define EMBER_CAT_IMPL(A,B) A##B
@@ -119,5 +120,27 @@ template <typename T>
 auto reversed(T&& t) {
     return reversed_impl<T>(std::forward<T>(t));
 }
+
+template <typename T>
+class span {
+public:
+    constexpr span() = default;
+
+    constexpr span(T* d, std::size_t n): elements(d), length(n) {}
+
+    constexpr T* begin() const { return elements; }
+
+    constexpr T* end() const { return elements + length; }
+
+    constexpr T* data() const { return elements; }
+
+    constexpr std::size_t size() const { return length; }
+
+    constexpr T& operator[](std::size_t i) const { return elements[i]; }
+
+private:
+    T* elements = nullptr;
+    std::size_t length = 0;
+};
 
 } // namespace ember::utility

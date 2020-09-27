@@ -12,16 +12,25 @@ return function()
     transform.scl.x = 0.5
     transform.scl.y = 0.5
 
-    local body = component.body.new()
-    body.type = 2
-    body.layer = 0
-    body.size.x = 0.5
-    body.size.y = 0.5
-    body.vel.x = (math.random() * 2 - 1) * 15
-    body.vel.y = -20
-    body.collides_with[1] = true
-    body.collides_with[2] = true
-    body.collides_with[3] = true
+    local bodyDef = b2BodyDef.new()
+    bodyDef.type = b2BodyType.b2_dynamicBody
+    bodyDef.fixedRotation = true
+    bodyDef.bullet = true
+    bodyDef.position:Set(transform.pos.x, transform.pos.y)
+    bodyDef.linearVelocity:Set((math.random() * 2 - 1) * 15, -20)
+
+    local shape = b2PolygonShape.new()
+    shape:SetAsBox(0.25, 0.25)
+
+    local fixture = b2FixtureDef.new()
+    fixture.shape = shape
+    fixture.friction = 0
+    fixture.restitution = 1
+    fixture.density = 1
+
+    local body = component.rigid_body.new()
+    body.body = world:CreateBody(bodyDef)
+    body.body:CreateFixture(fixture)
 
     local script = component.script.new()
     script.name = 'ball'

@@ -10,12 +10,16 @@ return function(x, y)
     transform.pos.y = y
     transform.scl.x = 2
 
-    local body = component.body.new()
-    body.type = 0
-    body.layer = 2
-    body.size.x = 2
-    body.size.y = 1
-    body.collides_with[1] = true
+    local bodyDef = b2BodyDef.new()
+    bodyDef.fixedRotation = true
+    bodyDef.position:Set(transform.pos.x, transform.pos.y)
+
+    local shape = b2PolygonShape.new()
+    shape:SetAsBox(1, 0.5)
+
+    local body = component.rigid_body.new()
+    body.body = world:CreateBody(bodyDef)
+    body.body:CreateFixture(shape, 1)
 
     local script = component.script.new()
     script.name = 'brick'

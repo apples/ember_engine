@@ -1,13 +1,13 @@
 #pragma once
 
-#include "physics.hpp"
-
+#include "ember/box2d_helpers.hpp"
 #include "ember/camera.hpp"
 #include "ember/entities.hpp"
 #include "ember/scene.hpp"
 
 #include <sushi/sushi.hpp>
 #include <sol.hpp>
+#include <box2d/box2d.h>
 
 #include <cmath>
 #include <memory>
@@ -27,9 +27,11 @@ public:
 private:
     ember::camera::orthographic camera;
     ember::database entities;
-    physics_system physics;
+    b2World world;
+    ember::box2d_fixed_timestep timestep;
     sol::table gui_state;
     sushi::mesh_group sprite_mesh;
     sushi::mesh_group tilemap_mesh;
     int lives;
+    std::vector<ember::database::ent_id> destroy_queue;
 };

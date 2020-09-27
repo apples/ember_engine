@@ -4,16 +4,20 @@ local ball = {}
 
 function ball.update(eid, delta)
     local transform = entities:get_component(eid, component.transform)
-    local body = entities:get_component(eid, component.body)
+    local body = entities:get_component(eid, component.rigid_body)
 
-    body.vel.y = body.vel.y + math.abs(body.vel.y)/body.vel.y * delta
+    local vy = body.body:GetLinearVelocity().y
+    if vy ~= 0 then
+        local iy = (math.abs(vy)/vy * delta) * body.body:GetMass()
+        body.body:ApplyLinearImpulseToCenter(b2Vec2.new(0, iy), true)
+    end
 
     if transform.pos.y < -16 then
         lose_life()
-        entities:destroy_entity(eid)
+        queue_destroy(eid)
         new_ball()
     elseif transform.pos.y > 16 or transform.pos.x < -16 or transform.pos.x > 16 then
-        entities:destroy_entity(eid)
+        queue_destroy(eid)
         new_ball()
     end
 end
