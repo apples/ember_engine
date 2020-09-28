@@ -22,4 +22,3 @@ function paddle.update(eid, delta)
 end
 
 return paddle
-

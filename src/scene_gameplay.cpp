@@ -22,6 +22,7 @@ scene_gameplay::scene_gameplay(ember::engine& engine, ember::scene* prev)
       camera(), // Camera has a sane default constructor, it is tweaked below
       entities(), // Entity database has no constructor parameters
       world({0, 0}), // Physics system
+      world_contact_listener(*this), // Physics contact listener
       timestep(), // Fixed timestep
       gui_state{engine.lua.create_table()}, // Gui state is initialized to an empty Lua table
       sprite_mesh{get_sprite_mesh()}, // Sprite and tilemap meshes is created statically
@@ -29,6 +30,7 @@ scene_gameplay::scene_gameplay(ember::engine& engine, ember::scene* prev)
       lives(3) {
     camera.height = 32; // Height of the camera viewport in world units, in this case 32 tiles
     camera.near = -1; // Near plane of an orthographic view is away from camera, so this is actually +1 view range on Z
+    world.SetContactListener(&world_contact_listener);
 }
 
 // Scene initialization
@@ -204,4 +206,28 @@ auto scene_gameplay::handle_game_input(const SDL_Event& event) -> bool {
 // Render GUI, which means returning the result of `create_element`.
 auto scene_gameplay::render_gui() -> sol::table {
     return ember::vdom::create_element(engine->lua, "gui.scene_gameplay.root", gui_state, engine->lua.create_table());
+}
+
+// Contact listener constructor simply stores a reference to the scene.
+scene_gameplay::contact_listener::contact_listener(scene_gameplay& scene) : scene(&scene) {}
+
+// Called after a collision has been processed by the physics engine.
+void scene_gameplay::contact_listener::PostSolve(b2Contact* contact, const b2ContactImpulse* impulse) {
+    // Get the physics bodys associated with the two colliding fixtures.
+    auto bodyA = contact->GetFixtureA()->GetBody();
+    auto bodyB = contact->GetFixtureB()->GetBody();
+
+    // Extract the ent_ids which are stored in the bodys' userData.
+    auto entA = scene->entities.from_ptr(bodyA->GetUserData());
+    auto entB = scene->entities.from_ptr(bodyB->GetUserData());
+
+    // Try to call the first entity's collision handler.
+    if (auto scriptA = scene->entities.get_component<component::script*>(entA)) {
+        scene->engine->call_script("systems.physics", "post_collide", "actors." + scriptA->name, entA, entB);
+    }
+
+    // Try to call the second entity's collision handler.
+    if (auto scriptB = scene->entities.get_component<component::script*>(entB)) {
+        scene->engine->call_script("systems.physics", "post_collide", "actors." + scriptB->name, entB, entA);
+    }
 }

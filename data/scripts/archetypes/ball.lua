@@ -1,4 +1,6 @@
 return function()
+    local eid = entities:create_entity()
+
     local sprite = component.sprite.new()
     sprite.texture = "sprites";
     sprite.size.x = 1/8
@@ -14,6 +16,7 @@ return function()
 
     local bodyDef = b2BodyDef.new()
     bodyDef.type = b2BodyType.b2_dynamicBody
+    bodyDef.userData = entities:to_ptr(eid)
     bodyDef.fixedRotation = true
     bodyDef.bullet = true
     bodyDef.position:Set(transform.pos.x, transform.pos.y)
@@ -35,7 +38,6 @@ return function()
     local script = component.script.new()
     script.name = 'ball'
 
-    local eid = entities:create_entity()
     entities:add_component(eid, sprite)
     entities:add_component(eid, transform)
     entities:add_component(eid, body)

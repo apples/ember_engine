@@ -1,4 +1,6 @@
 return function(x, y)
+    local eid = entities:create_entity()
+
     local sprite = component.sprite.new()
     sprite.texture = "sprites";
     sprite.size.y = 1/4
@@ -11,6 +13,7 @@ return function(x, y)
     transform.scl.x = 2
 
     local bodyDef = b2BodyDef.new()
+    bodyDef.userData = entities:to_ptr(eid)
     bodyDef.fixedRotation = true
     bodyDef.position:Set(transform.pos.x, transform.pos.y)
 
@@ -24,7 +27,6 @@ return function(x, y)
     local script = component.script.new()
     script.name = 'brick'
 
-    local eid = entities:create_entity()
     entities:add_component(eid, sprite)
     entities:add_component(eid, transform)
     entities:add_component(eid, body)

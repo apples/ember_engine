@@ -146,7 +146,9 @@ void register_type<database>(sol::table& lua) {
                     throw std::runtime_error(std::string("database.visit(): ") + error.what());
                 }
             });
-        });
+        },
+        "to_ptr", &database::to_ptr,
+        "from_ptr", &database::from_ptr);
 }
 
 } //namespace scripting

@@ -1,4 +1,6 @@
 return function()
+    local eid = entities:create_entity()
+
     local sprite = component.sprite.new()
     sprite.texture = "sprites";
     sprite.size.y = 1/4
@@ -9,6 +11,7 @@ return function()
     transform.scl.x = 4
 
     local bodyDef = b2BodyDef.new()
+    bodyDef.userData = entities:to_ptr(eid)
     bodyDef.type = b2BodyType.b2_dynamicBody
     bodyDef.fixedRotation = true
     bodyDef.position:Set(transform.pos.x, transform.pos.y)
@@ -26,7 +29,6 @@ return function()
     local script = component.script.new()
     script.name = 'paddle'
 
-    local eid = entities:create_entity()
     entities:add_component(eid, sprite)
     entities:add_component(eid, transform)
     entities:add_component(eid, body)
