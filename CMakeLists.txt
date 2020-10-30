@@ -149,6 +149,24 @@ else()
 
     find_package(SDL2 REQUIRED)
 
+    function(add_data_files TARGETNAME DIRECTORY)
+        file(GLOB_RECURSE EMBER_DATA_FILES CONFIGURE_DEPENDS "${DIRECTORY}/*")
+        set(EMBER_DATA_FILES_OUT)
+        foreach(DATA_FILE ${EMBER_DATA_FILES})
+            file(RELATIVE_PATH DATA_FILE_REL "${DIRECTORY}" "${DATA_FILE}")
+            set(DATA_FILE_OUT "${EMBER_OUT_DATA_DIR}/${DATA_FILE_REL}")
+            add_custom_command(
+                OUTPUT "${DATA_FILE_OUT}"
+                COMMAND "${CMAKE_COMMAND}" -E copy "${DATA_FILE}" "${DATA_FILE_OUT}"
+                COMMENT "Copying data file ${DATA_FILE_REL}"
+                DEPENDS "${DATA_FILE}")
+            list(APPEND EMBER_DATA_FILES_OUT "${DATA_FILE_OUT}")
+        endforeach()
+        add_custom_target(${TARGETNAME}
+            SOURCES ${EMBER_DATA_FILES}
+            DEPENDS ${EMBER_DATA_FILES_OUT})
+    endfunction()
+
     # Export Blender Models
     file(GLOB_RECURSE EMBER_BLENDS CONFIGURE_DEPENDS "${EMBER_DATA_SRC}/models/*.blend")
     foreach(BLEND_FILE ${EMBER_BLENDS})
@@ -166,38 +184,10 @@ else()
     endforeach()
 
     # Static Data Files
-    file(GLOB_RECURSE EMBER_DATA_FILES CONFIGURE_DEPENDS "${EMBER_DATA_DIR}/*")
-    set(EMBER_DATA_FILES_OUT)
-    foreach(DATA_FILE ${EMBER_DATA_FILES})
-        file(RELATIVE_PATH DATA_FILE_REL "${EMBER_DATA_DIR}" "${DATA_FILE}")
-        set(DATA_FILE_OUT "${EMBER_OUT_DATA_DIR}/${DATA_FILE_REL}")
-        add_custom_command(
-            OUTPUT "${DATA_FILE_OUT}"
-            COMMAND "${CMAKE_COMMAND}" -E copy "${DATA_FILE}" "${DATA_FILE_OUT}"
-            COMMENT "Copying data file ${DATA_FILE_REL}"
-            DEPENDS "${DATA_FILE}")
-        list(APPEND EMBER_DATA_FILES_OUT "${DATA_FILE_OUT}")
-    endforeach()
-    add_custom_target(ember_data
-        SOURCES ${EMBER_DATA_FILES}
-        DEPENDS ${EMBER_DATA_FILES_OUT})
+    add_data_files(ember_data "${EMBER_DATA_DIR}")
 
     # Platform Data Files
-    file(GLOB_RECURSE EMBER_PLATFORM_FILES CONFIGURE_DEPENDS "${EMBER_PLATFORM_DATA_DIR}/*")
-    set(EMBER_PLATFORM_FILES_OUT)
-    foreach(PLATFORM_FILE ${EMBER_PLATFORM_FILES})
-        file(RELATIVE_PATH PLATFORM_FILE_REL "${EMBER_PLATFORM_DATA_DIR}" "${PLATFORM_FILE}")
-        set(PLATFORM_FILE_OUT "${EMBER_OUT_DATA_DIR}/${PLATFORM_FILE_REL}")
-        add_custom_command(
-            OUTPUT "${PLATFORM_FILE_OUT}"
-            COMMAND "${CMAKE_COMMAND}" -E copy "${PLATFORM_FILE}" "${PLATFORM_FILE_OUT}"
-            COMMENT "Copying data file ${PLATFORM_FILE_REL}"
-            DEPENDS "${PLATFORM_FILE}")
-        list(APPEND EMBER_PLATFORM_FILES_OUT "${PLATFORM_FILE_OUT}")
-    endforeach()
-    add_custom_target(ember_platform_data
-        SOURCES ${EMBER_PLATFORM_FILES}
-        DEPENDS ${EMBER_PLATFORM_FILES_OUT})
+    add_data_files(ember_platform_data "${EMBER_PLATFORM_DATA_DIR}")
 
     # Client C++
     file(GLOB_RECURSE EMBER_SRCS CONFIGURE_DEPENDS src/*.cpp src/*.hpp)
