@@ -2,6 +2,8 @@
 
 #include <glm/gtc/matrix_inverse.hpp>
 
+#include <algorithm>
+
 namespace ember {
 
 /** Prepares the queue */

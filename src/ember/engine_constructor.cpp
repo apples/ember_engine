@@ -10,7 +10,7 @@
 
 namespace ember {
 
-engine::engine(const config::config& config) {
+engine::engine(const config::config& config) : should_quit(false) {
     std::clog << "Constructing engine..." << std::endl;
 
     // Initialize Lua
@@ -49,13 +49,20 @@ engine::engine(const config::config& config) {
 
     // Initialize window
 
+    std::clog << "Creating window..." << std::endl;
+
     SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
     SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
     SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
+#ifdef __EMSCRIPTEN__
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
-    //SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 1);
-    //SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 4);
+#else
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
+#endif
+    // SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 1);
+    // SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 4);
     window = SDL_CreateWindow(
         "Ember",
         SDL_WINDOWPOS_CENTERED,
@@ -66,9 +73,19 @@ engine::engine(const config::config& config) {
 
     glcontext = SDL_GL_CreateContext(window);
 
+#ifdef __EMSCRIPTEN__
+#else
+    if (!gladLoadGLLoader(SDL_GL_GetProcAddress)) {
+        std::cerr << "Failed to load GL extensions" << std::endl;
+        throw std::runtime_error("Failed to load GL extensions");
+    }
+#endif
+
     SDL_StartTextInput();
 
     // Compile Shaders
+
+    std::clog << "Compiling shaders..." << std::endl;
 
     basic_shader = shaders::basic_shader_program("data/shaders/basic.vert", "data/shaders/basic.frag");
     msdf_shader = shaders::msdf_shader_program("data/shaders/msdf.vert", "data/shaders/msdf.frag");
@@ -149,6 +166,8 @@ engine::engine(const config::config& config) {
     };
 
     // Init GUI
+
+    std::clog << "Initializing GUI..." << std::endl;
 
     renderer = sushi_renderer(
         {display.width, display.height},

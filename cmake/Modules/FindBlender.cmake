@@ -7,7 +7,7 @@
 # BLENDER_VERSION               - Version of Blender
 
 find_program(BLENDER_EXECUTABLE blender
-    PATHS "C:\\Program Files\\Blender Foundation\\Blender 2.82\\")
+    PATHS "C:\\Program Files\\Blender Foundation\\Blender 2.83\\")
 
 if(BLENDER_EXECUTABLE)
 # Get the python path and version from blender
@@ -26,7 +26,7 @@ endif()
 
 include(FindPackageHandleStandardArgs)
 
-find_package_handle_standard_args(BLENDER
+find_package_handle_standard_args(Blender
     REQUIRED_VARS
         BLENDER_EXECUTABLE
         BLENDER_VERSION

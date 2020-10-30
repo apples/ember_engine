@@ -2,10 +2,11 @@
 
 #include "ember/engine.hpp"
 #include "ember/config.hpp"
-#include "ember/emberjs/config.hpp"
 
+#ifdef __EMSCRIPTEN__
 #include <emscripten.h>
 #include <emscripten/html5.h>
+#endif
 
 #include <iostream>
 #include <stdexcept>
@@ -31,7 +32,9 @@ void main_loop() try {
     std::terminate();
 }
 
-int main() try {
+int main(int argc, char* argv[]) try {
+    SDL_SetMainReady();
+
     std::cout << "Init..." << std::endl;
 
     if (SDL_Init(SDL_INIT_VIDEO) != 0) {
@@ -40,7 +43,9 @@ int main() try {
 
     std::cout << "Loading config..." << std::endl;
 
-    auto config = emberjs::get_config().get<ember::config::config>();
+    auto config = ember::config::config{};
+    config.display.width = 1280;
+    config.display.height = 720;
 
     std::cout << "Instantiating engine..." << std::endl;
 
@@ -52,7 +57,13 @@ int main() try {
 
     loop = [&engine]{ engine->tick(); };
 
+#ifdef __EMSCRIPTEN__
     emscripten_set_main_loop(main_loop, 0, 1);
+#else
+    while (!engine->get_should_quit()) {
+        main_loop();
+    }
+#endif
 
     SDL_Quit();
 

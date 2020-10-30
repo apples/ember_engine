@@ -4,8 +4,14 @@ project(Ember)
 set(EMBER_WASM_ENABLE_EXCEPTIONS ON CACHE BOOL "Enable exceptions for WASM builds")
 set(EMBER_DATA_DIR "${CMAKE_SOURCE_DIR}/data" CACHE PATH "Data Directory")
 set(EMBER_DATA_SRC "${CMAKE_SOURCE_DIR}/data_src" CACHE PATH "Data Source Directory")
-set(EMBER_DATA_DST "${CMAKE_BINARY_DIR}/data" CACHE PATH "Data Output Directory")
+set(EMBER_DATA_DST "${CMAKE_BINARY_DIR}/data" CACHE PATH "Temporary Data Output Directory")
 set(BLENDER_EXPORT_PY "${CMAKE_SOURCE_DIR}/blender-scripts/export.py" CACHE PATH "Blender export script")
+
+if(EMSCRIPTEN)
+    set(EMBER_PLATFORM_DATA_DIR "${CMAKE_SOURCE_DIR}/platform/emscripten/data" CACHE PATH "Platform Data Directory")
+else()
+    set(EMBER_PLATFORM_DATA_DIR "${CMAKE_SOURCE_DIR}/platform/x86_64/data" CACHE PATH "Platform Data Directory")
+endif()
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -20,29 +26,35 @@ endif()
 
 include(ExternalProject)
 
+include(BlenderExports)
+
+set(SKIP_INSTALL_ALL Yes)
+set(FT_WITH_ZLIB Off)
+set(FT_WITH_BZIP2 Off)
+set(FT_WITH_PNG Off)
+set(FT_WITH_HARFBUZZ Off)
+set(FT_WITH_BROTLI Off)
+
+add_subdirectory(ext/freetype2)
 add_subdirectory(ext/ginseng)
 add_subdirectory(ext/lua)
 add_subdirectory(ext/sol2)
+add_subdirectory(ext/glm)
+add_subdirectory(ext/lodepng)
+add_subdirectory(ext/sushi)
+add_subdirectory(ext/msdfgen)
+add_subdirectory(ext/soloud)
+
+option(BOX2D_BUILD_UNIT_TESTS "Build the Box2D unit tests" OFF)
+option(BOX2D_BUILD_TESTBED "Build the Box2D testbed" OFF)
+add_subdirectory(ext/box2d)
 
 target_compile_definitions(sol2 INTERFACE SOL_CXX17_FEATURES=1)
 
 if(EMSCRIPTEN)
     find_package(Python REQUIRED COMPONENTS Interpreter)
-    find_package(Blender 2.80 REQUIRED)
 
-    set(EMBER_WWW_DIR "${CMAKE_BINARY_DIR}/www" CACHE PATH "Output Directory")
-
-    include(BlenderExports)
-
-    add_subdirectory(ext/glm)
-    add_subdirectory(ext/lodepng)
-    add_subdirectory(ext/sushi)
-    add_subdirectory(ext/msdfgen)
-    add_subdirectory(ext/soloud)
-
-    option(BOX2D_BUILD_UNIT_TESTS "Build the Box2D unit tests" OFF)
-    option(BOX2D_BUILD_TESTBED "Build the Box2D testbed" OFF)
-    add_subdirectory(ext/box2d)
+    set(EMBER_WWW_DIR "${CMAKE_BINARY_DIR}/www" CACHE PATH "Web Output Directory")
 
     # Static Files
     file(GLOB_RECURSE EMBER_STATIC CONFIGURE_DEPENDS static/*)
@@ -71,12 +83,12 @@ if(EMSCRIPTEN)
     endforeach()
 
     # Static Data Files
-    file(GLOB_RECURSE EMBER_DATA_FILES CONFIGURE_DEPENDS ${EMBER_DATA_DIR}/*)
+    file(GLOB_RECURSE EMBER_DATA_FILES CONFIGURE_DEPENDS ${EMBER_DATA_DIR}/* ${EMBER_PLATFORM_DATA_DIR}/*)
     list(APPEND EMBER_DATA_FILES ${EMBER_MODEL_OUTPUTS})
     set(FILE_PACKAGER $ENV{EMSDK}/upstream/emscripten/tools/file_packager.py)
     set(EMBER_DATA_FILE ${EMBER_WWW_DIR}/ember_game.data)
     set(EMBER_DATA_LOADER ${EMBER_WWW_DIR}/ember_game.data.js)
-    set(EMBER_DATA_PRELOAD_DIRS "${EMBER_DATA_DIR}@data")
+    set(EMBER_DATA_PRELOAD_DIRS "${EMBER_DATA_DIR}@data" "${EMBER_PLATFORM_DATA_DIR}@data")
     if(EXISTS "${EMBER_DATA_DST}")
         list(APPEND EMBER_DATA_PRELOAD_DIRS "${EMBER_DATA_DST}@data")
     endif()
@@ -132,5 +144,77 @@ if(EMSCRIPTEN)
         box2d)
     add_dependencies(ember_game ember_static ember_data)
 else()
-    message(FATAL_ERROR "You're on your own for this one")
+    set(EMBER_OUT_DIR "${CMAKE_BINARY_DIR}/dist" CACHE PATH "Output Directory")
+    set(EMBER_OUT_DATA_DIR "${EMBER_OUT_DIR}/data" CACHE PATH "Data Output Directory")
+
+    find_package(SDL2 REQUIRED)
+
+    # Export Blender Models
+    file(GLOB_RECURSE EMBER_BLENDS CONFIGURE_DEPENDS "${EMBER_DATA_SRC}/models/*.blend")
+    foreach(BLEND_FILE ${EMBER_BLENDS})
+        get_filename_component(BLEND_FILE_NAME ${BLEND_FILE} NAME_WLE)
+        if(${BLEND_FILE_NAME} MATCHES "^_")
+            continue()
+        endif()
+        blender_export_file(
+            OUT
+            "${BLEND_FILE}"
+            iqm
+            "${EMBER_DATA_SRC}/models"
+            "${EMBER_OUT_DATA_DIR}/models"
+            "${EMBER_OUT_DATA_DIR}/textures")
+    endforeach()
+
+    # Static Data Files
+    file(GLOB_RECURSE EMBER_DATA_FILES CONFIGURE_DEPENDS "${EMBER_DATA_DIR}/*")
+    set(EMBER_DATA_FILES_OUT)
+    foreach(DATA_FILE ${EMBER_DATA_FILES})
+        file(RELATIVE_PATH DATA_FILE_REL "${EMBER_DATA_DIR}" "${DATA_FILE}")
+        set(DATA_FILE_OUT "${EMBER_OUT_DATA_DIR}/${DATA_FILE_REL}")
+        add_custom_command(
+            OUTPUT "${DATA_FILE_OUT}"
+            COMMAND "${CMAKE_COMMAND}" -E copy "${DATA_FILE}" "${DATA_FILE_OUT}"
+            COMMENT "Copying data file ${DATA_FILE_REL}"
+            DEPENDS "${DATA_FILE}")
+        list(APPEND EMBER_DATA_FILES_OUT "${DATA_FILE_OUT}")
+    endforeach()
+    add_custom_target(ember_data
+        SOURCES ${EMBER_DATA_FILES}
+        DEPENDS ${EMBER_DATA_FILES_OUT})
+
+    # Platform Data Files
+    file(GLOB_RECURSE EMBER_PLATFORM_FILES CONFIGURE_DEPENDS "${EMBER_PLATFORM_DATA_DIR}/*")
+    set(EMBER_PLATFORM_FILES_OUT)
+    foreach(PLATFORM_FILE ${EMBER_PLATFORM_FILES})
+        file(RELATIVE_PATH PLATFORM_FILE_REL "${EMBER_PLATFORM_DATA_DIR}" "${PLATFORM_FILE}")
+        set(PLATFORM_FILE_OUT "${EMBER_OUT_DATA_DIR}/${PLATFORM_FILE_REL}")
+        add_custom_command(
+            OUTPUT "${PLATFORM_FILE_OUT}"
+            COMMAND "${CMAKE_COMMAND}" -E copy "${PLATFORM_FILE}" "${PLATFORM_FILE_OUT}"
+            COMMENT "Copying data file ${PLATFORM_FILE_REL}"
+            DEPENDS "${PLATFORM_FILE}")
+        list(APPEND EMBER_PLATFORM_FILES_OUT "${PLATFORM_FILE_OUT}")
+    endforeach()
+    add_custom_target(ember_platform_data
+        SOURCES ${EMBER_PLATFORM_FILES}
+        DEPENDS ${EMBER_PLATFORM_FILES_OUT})
+
+    # Client C++
+    file(GLOB_RECURSE EMBER_SRCS CONFIGURE_DEPENDS src/*.cpp src/*.hpp)
+    add_executable(ember_game ${EMBER_SRCS} ${EMBER_JS})
+    set_target_properties(ember_game PROPERTIES
+        CXX_STANDARD 17
+        CXX_STANDARD_REQUIRED Yes
+        RUNTIME_OUTPUT_DIRECTORY "${EMBER_OUT_DIR}")
+    target_compile_definitions(ember_game PUBLIC SDL_MAIN_HANDLED)
+    target_link_libraries(ember_game
+        ginseng
+        sushi
+        sol2
+        msdfgen
+        soloud
+        box2d
+        SDL2::SDL2-static
+        freetype)
+    add_dependencies(ember_game ember_data ember_platform_data)
 endif()
