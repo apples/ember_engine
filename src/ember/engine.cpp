@@ -75,10 +75,15 @@ void engine::tick() try {
     std::throw_with_nested(std::runtime_error("tick: "));
 }
 
+bool engine::get_should_quit() const {
+    return should_quit;
+}
+
 auto engine::handle_game_input(const SDL_Event& event) -> bool try {
     switch (event.type) {
     case SDL_QUIT:
         std::cout << "Goodbye!" << std::endl;
+        should_quit = true;
         return true;
     }
 

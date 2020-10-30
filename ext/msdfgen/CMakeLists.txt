@@ -32,11 +32,6 @@ if(EMSCRIPTEN)
         LINK_FLAGS "-s USE_FREETYPE=1")
 else()
     find_package(PkgConfig)
-    msdfgen_link_pkgconfig(msdfgen freetype2)
-    msdfgen_link_pkgconfig(msdfgen libpng)
-    msdfgen_link_pkgconfig(msdfgen harfbuzz)
-    msdfgen_link_pkgconfig(msdfgen bzip2)
-    msdfgen_link_pkgconfig(msdfgen graphite2)
-    target_link_libraries(msdfgen ${FREETYPE2_LIBRARIES}) #Cyclic dependency for harfbuzz
+    target_link_libraries(msdfgen freetype)
 endif()
 

@@ -10,3 +10,6 @@
 [submodule "ext/box2d"]
 	path = ext/box2d
 	url = https://github.com/erincatto/box2d
+[submodule "ext/freetype2"]
+	path = ext/freetype2
+	url = git://git.sv.nongnu.org/freetype/freetype2.git

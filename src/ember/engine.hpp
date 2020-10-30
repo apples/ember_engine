@@ -36,6 +36,8 @@ public:
 
     void tick();
 
+    bool get_should_quit() const;
+
     template <typename... Ts>
     auto call_script(const std::string& module_name, const std::string& function_name, Ts&&... args)
         -> sol::function_result;
@@ -57,6 +59,8 @@ private:
 
     SDL_Window* window;
     SDL_GLContext glcontext;
+
+    bool should_quit;
 
     clock::time_point prev_time;
     std::vector<clock::duration> framerate_buffer;

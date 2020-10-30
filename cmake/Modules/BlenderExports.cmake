@@ -1,3 +1,4 @@
+find_package(Blender 2.80 REQUIRED)
 
 function(blender_export_file OUTPUT BLEND_FILE FILETYPE BASE_DIR MODEL_DIR TEXTURE_DIR)
     get_filename_component(BASE_NAME "${BLEND_FILE}" NAME_WLE)
